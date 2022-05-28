@@ -1,8 +1,8 @@
 PSPSDK=$(shell psp-config --pspsdk-path)
-TOOLCHAIN_DIR?=/home/carsten/projects/easyrpg/buildscripts/psp
+TOOLCHAIN_DIR?=$(shell psp-config --pspdev-path)/psp
 
 TARGET = Player
-SOURCES = ../../src ../../lib/liblcf/src ../../lib/liblcf/src/generated
+SOURCES = ../../src ../../../liblcf/src ../../../liblcf/src/generated
 CPPFILES = $(foreach dir,$(SOURCES), $(wildcard $(dir)/*.cpp))
 OBJS = $(CPPFILES:.cpp=.o)
 INCLUDES = $(SOURCES)
@@ -14,7 +14,7 @@ CFLAGS = -G0 -g0 -O2 -Wall -DPSP -DPSPUI -DNDEBUG \
 #-DPSPUI_SCALE
 #-DLCF_SUPPORT_ICU
 #CFLAGS +=  -DHAVE_WILDMIDI -DHAVE_TREMOR
-CXXFLAGS = -std=c++11 $(CFLAGS) -fno-exceptions -fno-rtti
+CXXFLAGS = -std=gnu++14 $(CFLAGS) -fno-exceptions -fno-rtti
 
 PSP_EBOOT_TITLE = EasyRPG Player
 PSP_EBOOT_ICON = "144x80.png"

@@ -24,10 +24,12 @@
 #include <sstream>
 #include <vector>
 #include <random>
+#include <sys/features.h>
+#include <ctype.h>
 #include "system.h"
 #include "string_view.h"
 #include "span.h"
-
+#define _DEFAULT_SOURCE 1
 namespace Utils {
 	constexpr StringView DateFormat_YYMMDD = "%y%m%d";
 	constexpr StringView DateFormat_HHMMSS = "%H%M%S";
