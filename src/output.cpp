@@ -36,6 +36,9 @@
 #  include <android/log.h>
 #elif defined(EMSCRIPTEN)
 #  include <emscripten.h>
+#elif defined(PSP)
+#  include <unistd.h>
+#  include <pspdebug.h>
 #endif
 
 #include "external/rang.hpp"
@@ -219,6 +222,8 @@ EM_ASM({
 
 #  ifdef __ANDROID__
 	__android_log_print(lvl == LogLevel::Error ? ANDROID_LOG_ERROR : ANDROID_LOG_INFO, GAME_TITLE, "%s", msg.c_str());
+#  elif defined(PSP) && !defined(NDEBUG)
+ 	pspDebugScreenPuts(msg.c_str());
 #  else
 	// terminal output
 	std::cerr << rang::style::bold << lvl << prefix << rang::style::reset
@@ -334,7 +339,7 @@ void Output::ErrorStr(std::string const& err) {
 		std::cout << err << std::endl;
 		std::cout << std::endl;
 		std::cout << "EasyRPG Player will close now.";
-#if defined (GEKKO) || defined(__SWITCH__) || defined(__3DS__)
+#if defined (GEKKO) || defined(__SWITCH__) || defined(__3DS__) || defined (PSP)
 		// stdin is non-blocking
 		Game_Clock::SleepFor(5s);
 #elif defined (EMSCRIPTEN)

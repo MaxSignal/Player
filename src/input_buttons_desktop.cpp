@@ -16,7 +16,7 @@
  */
 
 // FIXME: Move in platform/generic (?) and handle with CMake
-#if !(defined(OPENDINGUX) || defined(GEKKO) || defined(USE_LIBRETRO) || defined(__vita__) || defined(__3DS__) || defined(__SWITCH__))
+#if !(defined(OPENDINGUX) || defined(GEKKO) || defined(USE_LIBRETRO) || defined(__vita__) || defined(__3DS__) || defined(__SWITCH__) || defined(PSP))
 
 // Headers
 #include "input_buttons.h"

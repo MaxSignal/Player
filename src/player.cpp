@@ -38,6 +38,12 @@
 #  include <3ds.h>
 #elif defined(__SWITCH__)
 #  include <switch.h>
+#elif defined(PSP)
+#  include <pspkernel.h>
+#  include <pspdebug.h>
+#  include <psppower.h>
+#  include <pspctrl.h>
+#  include <unistd.h>
 #endif
 
 #include "async_handler.h"
@@ -175,7 +181,13 @@ void Player::Init(int argc, char *argv[]) {
 	romfsInit();
 #endif
 
-#if defined(_WIN32)
+#if defined (PSP)
+ 	pspDebugScreenInit();
+	pspDebugScreenPuts("Loading...");
+
+	// Set processor frequency to maximum
+ 	scePowerSetClockFrequency(333, 333, 166);
+#elif defined(_WIN32)
 	WindowsUtils::InitMiniDumpWriter();
 #endif
 

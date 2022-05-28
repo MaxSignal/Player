@@ -53,6 +53,8 @@
 #  include <cstdio>
 #  include <psp2/io/stat.h>
 #  include <psp2/appmgr.h>
+#elif defined(PSP)
+#  include <unistd.h>
 #elif defined(__APPLE__) && TARGET_OS_OSX
 #  include <sys/syslimits.h>
 #  include "platform/macos/utils.h"
@@ -89,11 +91,14 @@ void Main_Data::Init() {
 			// first set to current directory for all platforms
 			project_path = "";
 
-#if defined(GEKKO) || defined(__SWITCH__) || defined(__MORPHOS__) || defined(__amigaos4__) || defined(__AROS__)
+#if defined(GEKKO) || defined(__SWITCH__) || defined(__MORPHOS__) || defined(__amigaos4__) || defined(__AROS__) || defined(PSP)
 			// Working directory not correctly handled
 			char working_dir[256];
 			getcwd(working_dir, 255);
 			project_path = std::string(working_dir);
+#  if defined(PPSSPP_COMPATIBLE)
+ 			project_path = "ms0:/PSP/GAME/easyrpg";
+#  endif
 #elif defined(__vita__)
 			// Check if app is invoked with an externalized game path
 			char boot_params[1024];

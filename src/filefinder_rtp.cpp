@@ -82,6 +82,9 @@ FileFinder_RTP::FileFinder_RTP(bool no_rtp, bool no_rtp_warnings, std::string rt
 	env->DeleteLocalRef(sdl_activity);
 	env->DeleteLocalRef(cls);
 	AddPath(cs + "/" + version_str);
+#elif defined(PSP)
+ 	AddPath("ms0:/data/rtp/" + version_str);
+ 	AddPath("ms0:/PSP/EasyRPG/data/rtp/" + version_str);
 #elif defined(USE_WINE_REGISTRY) || defined(_WIN32)
 	std::string const product = "RPG" + version_str;
 	if (Player::IsRPG2k()) {
