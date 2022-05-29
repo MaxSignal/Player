@@ -29,7 +29,7 @@ LIBS = -L$(TOOLCHAIN_DIR)/lib -L$(PSPSDK)/../lib \
        -lglib2d -lpspvram \
        -lpsprtc -lpsphprm \
        -lpspgu -lpsppower \
-       -lpspdebug -lstdc++ -lm
+       -lpspdebug -lstdc++ -lm 
 #       -licui18n -licuuc -licudata \
 #-lWildMidi -lvorbisidec -logg
 

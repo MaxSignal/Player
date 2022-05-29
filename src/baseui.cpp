@@ -51,7 +51,7 @@ std::shared_ptr<BaseUi> BaseUi::CreateUi(long width, long height, const Game_Con
 #elif defined(__SWITCH__)
 	return std::make_shared<NxUi>(width, height, cfg);
 #elif PSP
- 	return std::make_shared<PspUi>(width, height);
+ 	return std::make_shared<PspUi>(width, height, cfg);
 #else
 #  error cannot create UI
 #endif

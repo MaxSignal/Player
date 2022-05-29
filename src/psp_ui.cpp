@@ -35,8 +35,8 @@ static g2dTexture* main_texture;
 static struct timeval time_start;
 static SceCtrlData pad;
 
-PspUi::PspUi(int width, int height) :
-	BaseUi() {
+PspUi::PspUi(int width, int height, const Game_ConfigVideo& cfg) :
+	BaseUi(cfg) {
 	gettimeofday(&time_start, NULL);
 
 	// setup joystick
@@ -103,25 +103,25 @@ bool PspUi::IsFullscreen() {
 void PspUi::ProcessEvents() {
 	sceCtrlPeekBufferPositive(&pad, 1);
 
-	keys[Input::Keys::JOY_0] = pad.Buttons & PSP_CTRL_TRIANGLE;
-	keys[Input::Keys::JOY_1] = pad.Buttons & PSP_CTRL_CIRCLE;
-	keys[Input::Keys::JOY_2] = pad.Buttons & PSP_CTRL_CROSS;
-	keys[Input::Keys::JOY_3] = pad.Buttons & PSP_CTRL_SQUARE;
-	keys[Input::Keys::JOY_4] = pad.Buttons & PSP_CTRL_LTRIGGER;
-	keys[Input::Keys::JOY_5] = pad.Buttons & PSP_CTRL_RTRIGGER;
-	keys[Input::Keys::JOY_6] = pad.Buttons & PSP_CTRL_DOWN;
-	keys[Input::Keys::JOY_7] = pad.Buttons & PSP_CTRL_LEFT;
-	keys[Input::Keys::JOY_8] = pad.Buttons & PSP_CTRL_UP;
-	keys[Input::Keys::JOY_9] = pad.Buttons & PSP_CTRL_RIGHT;
-	keys[Input::Keys::JOY_10] = pad.Buttons & PSP_CTRL_SELECT;
-	keys[Input::Keys::JOY_11] = pad.Buttons & PSP_CTRL_START;
-	keys[Input::Keys::JOY_12] = pad.Buttons & PSP_CTRL_HOME;
-	keys[Input::Keys::JOY_13] = pad.Buttons & PSP_CTRL_HOLD;
+	keys[Input::Keys::JOY_A] = pad.Buttons & PSP_CTRL_TRIANGLE;
+	keys[Input::Keys::JOY_B] = pad.Buttons & PSP_CTRL_CIRCLE;
+	keys[Input::Keys::JOY_X] = pad.Buttons & PSP_CTRL_CROSS;
+	keys[Input::Keys::JOY_Y] = pad.Buttons & PSP_CTRL_SQUARE;
+	keys[Input::Keys::JOY_REAR_LEFT_1] = pad.Buttons & PSP_CTRL_LTRIGGER;
+	keys[Input::Keys::JOY_REAR_RIGHT_1] = pad.Buttons & PSP_CTRL_RTRIGGER;
+	keys[Input::Keys::JOY_DPAD_DOWN] = pad.Buttons & PSP_CTRL_DOWN;
+	keys[Input::Keys::JOY_DPAD_LEFT] = pad.Buttons & PSP_CTRL_LEFT;
+	keys[Input::Keys::JOY_DPAD_UP] = pad.Buttons & PSP_CTRL_UP;
+	keys[Input::Keys::JOY_DPAD_RIGHT] = pad.Buttons & PSP_CTRL_RIGHT;
+	keys[Input::Keys::JOY_BACK] = pad.Buttons & PSP_CTRL_SELECT;
+	keys[Input::Keys::JOY_START] = pad.Buttons & PSP_CTRL_START;
+	keys[Input::Keys::JOY_C] = pad.Buttons & PSP_CTRL_HOME;
+	keys[Input::Keys::JOY_Z] = pad.Buttons & PSP_CTRL_HOLD;
 
- 	keys[Input::Keys::JOY_AXIS_X_LEFT] = (pad.Lx < 55);
- 	keys[Input::Keys::JOY_AXIS_X_RIGHT] = (pad.Lx > 200);
- 	keys[Input::Keys::JOY_AXIS_Y_DOWN] = (pad.Ly > 200);
- 	keys[Input::Keys::JOY_AXIS_Y_UP] = (pad.Ly < 55);
+ 	keys[Input::Keys::JOY_STICK_PRIMARY_LEFT] = (pad.Lx < 55);
+ 	keys[Input::Keys::JOY_STICK_PRIMARY_RIGHT] = (pad.Lx > 200);
+ 	keys[Input::Keys::JOY_STICK_PRIMARY_DOWN] = (pad.Ly > 200);
+ 	keys[Input::Keys::JOY_STICK_PRIMARY_UP] = (pad.Ly < 55);
 }
 
 void PspUi::UpdateDisplay() {

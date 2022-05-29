@@ -34,7 +34,7 @@ public:
 	 * @param width window client width.
 	 * @param height window client height.
 	 */
-	PspUi(int width, int height);
+	PspUi(int width, int height, const Game_ConfigVideo& cfg);
 
 	/**
 	 * Destructor.
