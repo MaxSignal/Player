@@ -18,7 +18,7 @@
 #ifdef PSPUI
 
 // Headers
-#include "psp_ui.h"
+#include "platform/psp/ui.h"
 #include "color.h"
 #include "graphics.h"
 #include "keys.h"
