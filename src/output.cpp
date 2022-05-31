@@ -20,30 +20,24 @@
 #include <cstdarg>
 #include <ctime>
 #include <cstdio>
-
 #include <iostream>
 #include <fstream>
 #include <thread>
 #include <chrono>
-
-#include "graphics.h"
-#include "output.h"
-
-#ifdef GEKKO
-#  include <gccore.h>
-#  include <sys/iosupport.h>
-#elif defined(__ANDROID__)
+#ifdef __ANDROID__
 #  include <android/log.h>
 #elif defined(EMSCRIPTEN)
 #  include <emscripten.h>
 #elif defined(PSP)
 #  include <unistd.h>
 #  include <pspdebug.h>
+#elif defined(__vita__)
+#  include <psp2/kernel/processmgr.h>
 #endif
-
 #include "external/rang.hpp"
 
 #include "output.h"
+#include "graphics.h"
 #include "filefinder.h"
 #include "input.h"
 #include "options.h"
@@ -101,34 +95,6 @@ namespace {
 		std::string msg;
 		LogLevel lvl = {};
 	} last_message;
-
-#ifdef GEKKO
-	/* USBGecko Debugging on Wii */
-	bool usbgecko = false;
-	mutex_t usbgecko_mutex = 0;
-
-	static ssize_t __usbgecko_write(struct _reent * /* r */, void* /* fd */, const char *ptr, size_t len) {
-		uint32_t level;
-
-		if (!ptr || !len || !usbgecko)
-			return 0;
-
-		LWP_MutexLock(usbgecko_mutex);
-		level = IRQ_Disable();
-		usb_sendbuffer(1, ptr, len);
-		IRQ_Restore(level);
-		LWP_MutexUnlock(usbgecko_mutex);
-
-		return len;
-	}
-
-	const devoptab_t dotab_geckoout = {
-		"stdout", 0, NULL, NULL, __usbgecko_write, NULL, NULL, NULL, NULL, NULL, NULL,
-		NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-		NULL, NULL, NULL
-	};
-#endif
-
 }
 
 LogLevel Output::GetLogLevel() {
@@ -225,9 +191,18 @@ EM_ASM({
 #  elif defined(PSP) && !defined(NDEBUG)
  	pspDebugScreenPuts(msg.c_str());
 #  else
+	bool message_eaten = false;
+	// try custom logger
+	if (DisplayUi) {
+		std::string m = prefix + msg;
+		message_eaten = DisplayUi->LogMessage(m);
+	}
+
 	// terminal output
-	std::cerr << rang::style::bold << lvl << prefix << rang::style::reset
+	if (!message_eaten) {
+		std::cerr << rang::style::bold << lvl << prefix << rang::style::reset
 		<< lvl << msg << rang::fg::reset << std::endl;
+	}
 #  endif
 
 #endif
@@ -339,7 +314,7 @@ void Output::ErrorStr(std::string const& err) {
 		std::cout << err << std::endl;
 		std::cout << std::endl;
 		std::cout << "EasyRPG Player will close now.";
-#if defined (GEKKO) || defined(__SWITCH__) || defined(__3DS__) || defined (PSP)
+#if defined (PLAYER_NINTENDO) || defined(__vita__) || defined(PSP)
 		// stdin is non-blocking
 		Game_Clock::SleepFor(5s);
 #elif defined (EMSCRIPTEN)
@@ -351,6 +326,10 @@ void Output::ErrorStr(std::string const& err) {
 #endif
 	}
 
+	// FIXME: This does not go through platform teardown code
+#ifdef __vita__
+	sceKernelExitProcess(EXIT_FAILURE);
+#endif
 	exit(EXIT_FAILURE);
 }
 
@@ -374,20 +353,3 @@ void Output::DebugStr(std::string const& msg) {
 	}
 	WriteLog(LogLevel::Debug, msg, Color(128, 128, 128, 255));
 }
-
-#ifdef GEKKO
-extern const devoptab_t dotab_stdnull;
-
-void Output::WiiSetConsole() {
-	LWP_MutexInit(&usbgecko_mutex, false);
-	usbgecko = usb_isgeckoalive(1);
-
-	if (usbgecko) {
-		devoptab_list[STD_OUT] = &dotab_geckoout;
-		devoptab_list[STD_ERR] = &dotab_geckoout;
-	} else {
-		devoptab_list[STD_OUT] = &dotab_stdnull;
-		devoptab_list[STD_ERR] = &dotab_stdnull;
-	}
-}
-#endif
