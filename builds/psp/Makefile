@@ -2,7 +2,7 @@ PSPSDK=$(shell psp-config --pspsdk-path)
 TOOLCHAIN_DIR?=$(shell psp-config --pspdev-path)/psp
 
 TARGET = Player
-SOURCES = ../../src ../../../liblcf/src ../../../liblcf/src/generated
+SOURCES = ../../src ../../src/platform/psp ../../../liblcf/src ../../../liblcf/src/generated
 CPPFILES = $(foreach dir,$(SOURCES), $(wildcard $(dir)/*.cpp))
 OBJS = $(CPPFILES:.cpp=.o)
 INCLUDES = $(SOURCES)
