@@ -55,6 +55,7 @@
 #ifdef PS2
 #  define SUPPORT_JOYSTICK
 #  define SUPPORT_JOYSTICK_AXIS
+#  define HAVE_LIBSAMPLERATE
 #endif
 
 
