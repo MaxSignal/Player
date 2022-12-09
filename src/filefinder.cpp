@@ -707,7 +707,7 @@ bool FileFinder::IsDirectory(const std::string& dir) {
 	      == FILE_ATTRIBUTE_DIRECTORY;
 #  else
 	struct stat sb;
-	::lstat(dir.c_str(), &sb);
+	::stat(dir.c_str(), &sb);
 	return S_ISDIR(sb.st_mode);
 #  endif
 #endif

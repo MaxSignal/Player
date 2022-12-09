@@ -26,7 +26,7 @@
 #  include <config.h>
 #endif
 
-#if !(defined(USE_SDL) || defined(_3DS) || defined(PSP2) || defined(SWITCH))
+#if !(defined(USE_SDL) || defined(_3DS) || defined(PSP2) || defined(SWITCH) || defined(PS2))
 #  error "This build doesn't target a backend"
 #endif
 
@@ -51,6 +51,12 @@
 #  define SUPPORT_JOYSTICK
 #  define SUPPORT_JOYSTICK_AXIS
 #endif
+
+#ifdef PS2
+#  define SUPPORT_JOYSTICK
+#  define SUPPORT_JOYSTICK_AXIS
+#endif
+
 
 #if defined(GEKKO) || defined(__MORPHOS__) || defined(__amigaos4__)
 #  include "stdint.h"

@@ -78,41 +78,41 @@ double Hue_2_RGB(double v1, double v2, double vH) {
 /**
  * HSL to RGB.
  */
-Color HSL2RGB(ColorHSL col) {
-	Color ncol(0, 0, 0, 0);
-	if (col.s == 0) {
-		ncol.red = (unsigned char)(col.l * 255);
-		ncol.green = (unsigned char)(col.l * 255);
-		ncol.blue = (unsigned char)(col.l * 255);
-	} else {
-		double v1, v2;
-		if (col.l < 0.5) {
-			v2 = col.l * (1 + col.s);
-		} else {
-			v2 = (col.l + col.s) - (col.s * col.l);
-		}
-		v1 = 2 * col.l - v2;
-		ncol.red = (unsigned char)(255 * Hue_2_RGB(v1, v2, col.h + (1.0 / 3)));
-		ncol.green = (unsigned char)(255 * Hue_2_RGB(v1, v2, col.h));
-		ncol.blue = (unsigned char)(255 * Hue_2_RGB(v1, v2, col.h - (1.0 / 3)));
-	}
-	return ncol;
-}
+// Color HSL2RGB(ColorHSL col) {
+// 	Color ncol(0, 0, 0, 0);
+// 	if (col.s == 0) {
+// 		ncol.red = (unsigned char)(col.l * 255);
+// 		ncol.green = (unsigned char)(col.l * 255);
+// 		ncol.blue = (unsigned char)(col.l * 255);
+// 	} else {
+// 		double v1, v2;
+// 		if (col.l < 0.5) {
+// 			v2 = col.l * (1 + col.s);
+// 		} else {
+// 			v2 = (col.l + col.s) - (col.s * col.l);
+// 		}
+// 		v1 = 2 * col.l - v2;
+// 		ncol.red = (unsigned char)(255 * Hue_2_RGB(v1, v2, col.h + (1.0 / 3)));
+// 		ncol.green = (unsigned char)(255 * Hue_2_RGB(v1, v2, col.h));
+// 		ncol.blue = (unsigned char)(255 * Hue_2_RGB(v1, v2, col.h - (1.0 / 3)));
+// 	}
+// 	return ncol;
+// }
 
 Color RGBAdjustHSL(Color col, double h, double s, double l) {
-	ColorHSL hsl;
-	Color rgb = col;
-	hsl = RGB2HSL(rgb);
-	hsl.h = hsl.h + h / 360.0;
-	while (hsl.h > 1) hsl.h -= 1;
-	while (hsl.h < 0) hsl.h += 1;
-	hsl.s = hsl.s + s;
-	if (hsl.s > 1) hsl.s = 1;
-	if (hsl.s < 0) hsl.s = 0;
-	hsl.l = hsl.l * l;
-	if (hsl.l > 1) hsl.l = 1;
-	if (hsl.l < 0) hsl.l = 0;
-	rgb = HSL2RGB(hsl);
-	rgb.alpha = col.alpha;
-	return rgb;
+// 	ColorHSL hsl;
+// 	Color rgb = col;
+// 	hsl = RGB2HSL(rgb);
+// 	hsl.h = hsl.h + h / 360.0;
+// 	while (hsl.h > 1) hsl.h -= 1;
+// 	while (hsl.h < 0) hsl.h += 1;
+// 	hsl.s = hsl.s + s;
+// 	if (hsl.s > 1) hsl.s = 1;
+// 	if (hsl.s < 0) hsl.s = 0;
+// 	hsl.l = hsl.l * l;
+// 	if (hsl.l > 1) hsl.l = 1;
+// 	if (hsl.l < 0) hsl.l = 0;
+// 	rgb = HSL2RGB(hsl);
+// 	rgb.alpha = col.alpha;
+// 	return rgb;
 }

@@ -67,6 +67,7 @@ add_library(${PROJECT_NAME}
 	src/input_buttons_gekko.cpp
 	src/input_buttons_opendingux.cpp
 	src/input_buttons_psp.cpp
+	src/input_buttons_ps2.cpp
 	src/input_source.cpp
 	src/input.cpp
 	src/main_data.cpp
@@ -231,9 +232,8 @@ target_link_libraries(${PROJECT_NAME} PIXMAN::PIXMAN)
 find_package(SDL2 REQUIRED)
 target_link_libraries(${PROJECT_NAME} SDL2::SDL2main)
 
-# Always enable Wine registry support on non-Windows
-if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
-	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_WINE=1)
+if(PS2)
+	target_link_libraries(${PROJECT_NAME} SDL2main modplug samplerate iconv patches gskit dmakit ps2_drivers )
 endif()
 
 # freetype and harfbuzz
@@ -383,30 +383,15 @@ if(${PLAYER_AUDIO_BACKEND} MATCHES "^SDL.*$")
 	endif()
 endif()
 
-# Executable
-# Windows: Only open console for Debug builds
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-	add_executable(${PROJECT_NAME}_exe "src/main.cpp")
-else()
-	add_executable(${PROJECT_NAME}_exe WIN32 "src/main.cpp")
-endif()
+add_executable(${PROJECT_NAME}_elf "src/main.cpp")
 
-if(WIN32)
-	set_target_properties(${PROJECT_NAME}_exe PROPERTIES OUTPUT_NAME "Player")
-else()
-	set_target_properties(${PROJECT_NAME}_exe PROPERTIES OUTPUT_NAME "easyrpg-player")
-endif()
+set_target_properties(${PROJECT_NAME}_elf PROPERTIES OUTPUT_NAME "easyrpg-player")
 
-# Add Windows resources
-if(WIN32)
-	target_sources(${PROJECT_NAME}_exe PRIVATE "resources/player.rc")
-endif()
-
-target_link_libraries(${PROJECT_NAME}_exe ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}_elf ${PROJECT_NAME})
 
 # installation
 include(GNUInstallDirs)
-install(TARGETS ${PROJECT_NAME}_exe
+install(TARGETS ${PROJECT_NAME}_elf
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # manpage

@@ -140,6 +140,8 @@ void Main_Data::Init() {
 				// No RomFS -> load games from hardcoded path
 				project_path = "sdmc:/3ds/easyrpg-player";
 			}
+#elif defined(PS2)
+			project_path = "host0://";
 #elif defined(__APPLE__) && defined(__MACH__)
 #  if SDL_MAJOR_VERSION>1
 			// Apple Finder does not set the working directory
