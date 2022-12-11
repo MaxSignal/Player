@@ -1,15 +1,37 @@
-how to build:
-No different than usual, but compiling libiconv was very tedious, 
-so I put it in the ps2lib folder with the pre-compiled libraries. 
-I used this docker image, so with this you only need to "make install".
-https://hub.docker.com/r/ps2dev/ps2dev/tags
 
-issue:
+HOW TO BUILD:
+use this: https://hub.docker.com/r/ps2dev/ps2dev/tags
+player:
+mkdir build
+cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake
+
+liblcf:
+mkdir build 
+cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake -DCMAKE_INSTALL_PREFIX=$PS2SDK/ports/ -DDISABLE_ICU=1 -DBUILD_SHARED_LIBS=OFF WANT_STATIC=ON
+
+libexpat:
+cmake .. -DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake -DCMAKE_INSTALL_PREFIX=$PS2SDK/ports/ -DBUILD_SHARED_LIBS=OFF
+
+libiconv:
+compiling libiconv was very tedious, 
+so I put it in the ps2lib folder with the pre-compiled libraries. 
+you only need to "make install".
+
+libsamplerate:
+cmake .. -DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake -DCMAKE_INSTALL_PREFIX=$PS2SDK/ports/
+please disable LIBSAMPLERATE_EXAMPLES
+
+pixman:
+./configure --prefix=/usr/local/ps2dev/ps2sdk/ports --host=mips64r5900el-ps2-elf --target=mips64r5900el-ps2-elf
+
+ISSUE:
 Music and SE do not play properly. 
 I thought it was processing down, so I tried lowering the sampling frequency, but that didn't make any difference. 
 If anyone can fix it, please do so.
 
-other:
+OTHER:
 When loading files that contain Japanese or other languages, please add this to rpg_rt.ini
 [EasyRPG] 
 Encoding= codepage 
