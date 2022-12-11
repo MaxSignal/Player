@@ -1,6 +1,6 @@
-
 HOW TO BUILD:
-use this: https://hub.docker.com/r/ps2dev/ps2dev/tags
+use this docker image: https://hub.docker.com/r/ps2dev/ps2dev/tags
+
 player:
 mkdir build
 cd build
