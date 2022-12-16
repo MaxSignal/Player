@@ -62,6 +62,9 @@
 #elif defined(__vita__)
 #  define SUPPORT_JOYSTICK
 #  define SUPPORT_JOYSTICK_AXIS
+#elif defined(PSP)
+#  define SUPPORT_JOYSTICK
+#  define SUPPORT_JOYSTICK_AXIS
 #elif defined(GEKKO)
 #  include <cstdint>
 #  define WORDS_BIGENDIAN

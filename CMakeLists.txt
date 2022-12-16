@@ -527,6 +527,11 @@ if(ANDROID AND PLAYER_GRADLE_BUILD)
 	endforeach(f)
 endif()
 
+if(PSP)
+	target_sources(${PROJECT_NAME} PRIVATE src/platform/psp/psp_input_buttons.cpp
+	src/platform/psp/clock.cpp)
+endif()
+
 if(${PLAYER_TARGET_PLATFORM} STREQUAL "SDL2")
 	target_sources(${PROJECT_NAME} PRIVATE
 		src/platform/sdl/audio.cpp
@@ -540,9 +545,9 @@ if(${PLAYER_TARGET_PLATFORM} STREQUAL "SDL2")
 		add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/builds/android/app/src/gamebrowser)
 		target_link_libraries(${PROJECT_NAME} SDL2::SDL2)
 		set(PLAYER_BUILD_EXECUTABLE OFF)
-	else()
-		target_link_libraries(${PROJECT_NAME} SDL2::SDL2main)
 	endif()
+
+	target_link_libraries(${PROJECT_NAME} SDL2::SDL2main)
 elseif(${PLAYER_TARGET_PLATFORM} STREQUAL "SDL1")
 	target_sources(${PROJECT_NAME} PRIVATE
 		src/platform/sdl/audio.cpp
@@ -710,6 +715,10 @@ endif()
 
 if(ANDROID)
 	target_link_libraries(${PROJECT_NAME} android log)
+endif()
+
+if(PSP)
+	target_link_libraries(${PROJECT_NAME} iconv bz2)
 endif()
 
 if(WIN32)
@@ -1027,7 +1036,7 @@ if(${PLAYER_BUILD_EXECUTABLE} AND (${PLAYER_TARGET_PLATFORM} STREQUAL "SDL2" OR 
 		configure_file(resources/macos/Info.plist.in resources/macos/Info.plist @ONLY)
 		set_target_properties(${EXE_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/resources/macos/Info.plist")
 		set_target_properties(${EXE_NAME} PROPERTIES OUTPUT_NAME "EasyRPG Player")
-	else()
+	elif(NOT PSP)
 		set(EXE_NAME ${PROJECT_NAME}_exe)
 		add_executable(${EXE_NAME} "src/platform/sdl/main.cpp")
 		set_target_properties(${EXE_NAME} PROPERTIES OUTPUT_NAME "easyrpg-player")
@@ -1047,7 +1056,38 @@ if(${PLAYER_BUILD_EXECUTABLE} AND (${PLAYER_TARGET_PLATFORM} STREQUAL "SDL2" OR 
 		set_target_properties(${EXE_NAME} PROPERTIES OUTPUT_NAME "Player")
 	endif()
 
-	target_link_libraries(${EXE_NAME} ${PROJECT_NAME})
+	if(NOT PSP)
+		target_link_libraries(${EXE_NAME} ${PROJECT_NAME})
+	endif()
+	
+	if(PSP)
+		set(EXE_NAME ${PROJECT_NAME}_output)
+		add_executable(${EXE_NAME} "src/platform/sdl/main.cpp")
+		target_link_libraries(${EXE_NAME} PRIVATE
+			${PROJECT_NAME}
+			SDL2
+			SDL2main
+			GL
+			pspvram
+			pspaudio
+			pspvfpu
+			pspdisplay
+			pspgu
+			pspge
+			pspdebug
+			psphprm
+			pspctrl
+		)
+
+		create_pbp_file(
+			TARGET ${EXE_NAME}
+			ICON_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources/psp/144x80.png"
+			BACKGROUND_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources/psp/480x272.png"
+			PREVIEW_PATH NULL
+			TITLE "EasyRPG"
+			BUILD_PRX
+		)
+	endif()
 
 	if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
 		# Do not confuse this with our own -DUSE_SDL
@@ -1076,7 +1116,7 @@ if(${PLAYER_BUILD_EXECUTABLE} AND (${PLAYER_TARGET_PLATFORM} STREQUAL "SDL2" OR 
 	include(GNUInstallDirs)
 	if(APPLE)
 		install(TARGETS ${EXE_NAME} RUNTIME DESTINATION BUNDLE DESTINATION "${CMAKE_BINARY_DIR}/Package")
-	else()
+	elif(NOT PSP)
 		install(TARGETS ${EXE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 	endif()
 
@@ -1091,6 +1131,8 @@ if(${PLAYER_BUILD_EXECUTABLE} AND (${PLAYER_TARGET_PLATFORM} STREQUAL "SDL2" OR 
 
 	if(MSVC)
 		install(FILES $<TARGET_PDB_FILE:${EXE_NAME}> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+	elif(PSP)
+		install(FILES ${CMAKE_CURRENT_BINARY_DIR}/easyrpg-player.elf DESTINATION ${PROJECT_NAME})
 	endif()
 
 	if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
@@ -1206,7 +1248,7 @@ elseif(${PLAYER_TARGET_PLATFORM} MATCHES "^(psvita|3ds|switch|wii)$")
 elseif(${PLAYER_TARGET_PLATFORM} STREQUAL "amigaos4")
 	add_executable(easyrpg-player "src/platform/sdl/main.cpp")
 	target_link_libraries(easyrpg-player
-		${PROJECT_NAME}
+		${PROJECT_NAME} 
 		${SDL_LIBRARIES})
 	# FIXME: packaging?
 else()

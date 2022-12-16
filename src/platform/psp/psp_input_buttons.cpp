@@ -35,7 +35,7 @@ Input::ButtonMappingArray Input::GetDefaultButtonMappings() {
 		{LEFT, Keys::JOY_DPAD_LEFT}, // Left
 		{UP, Keys::JOY_DPAD_UP}, // Up
 		{RIGHT, Keys::JOY_DPAD_RIGHT}, // Right
-	}
+	};
 }
 
 Input::DirectionMappingArray Input::GetDefaultDirectionMappings() {

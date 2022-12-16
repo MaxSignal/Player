@@ -61,6 +61,8 @@ FileFinder_RTP::FileFinder_RTP(bool no_rtp, bool no_rtp_warnings, std::string rt
 	AddPath("ux0:/data/easyrpg-player/rtp/" + version_str);
 #elif defined(__MORPHOS__)
 	AddPath("PROGDIR:rtp/" + version_str);
+#elif defined(PSP)
+ 	AddPath("ms0:/PSP/EasyRPG/data/rtp/" + version_str);
 #elif defined(USE_LIBRETRO)
 	const char* dir = nullptr;
 	if (LibretroUi::environ_cb(RETRO_ENVIRONMENT_GET_CORE_ASSETS_DIRECTORY, &dir) && dir) {
@@ -113,7 +115,7 @@ FileFinder_RTP::FileFinder_RTP(bool no_rtp, bool no_rtp_warnings, std::string rt
 	AddPath("/data/rtp/" + version_str);
 #endif
 
-#if (defined(PLAYER_NINTENDO) || defined(__vita__) || defined(__ANDROID__))
+#if (defined(PLAYER_NINTENDO) || defined(__vita__) || defined(__ANDROID__)) || defined(PSP)
 	// skip environment paths
 	return;
 #endif

@@ -45,7 +45,7 @@ Platform::File::File(std::string name) :
 bool Platform::File::Exists() const {
 #ifdef _WIN32
 	return ::GetFileAttributesW(filename.c_str()) != (DWORD)-1;
-#elif defined(__vita__)
+#elif defined(__vita__) || defined(PSP)
 	struct SceIoStat sb;
 	return (::sceIoGetstat(filename.c_str(), &sb) >= 0);
 #else
@@ -74,18 +74,23 @@ Platform::FileType Platform::File::GetType(bool follow_symlinks) const {
 		return FileType::Directory;
 	}
 	return FileType::Other;
-#elif defined(__vita__)
+#elif defined(__vita__) || defined(PSP)
 	(void)follow_symlinks;
 	struct SceIoStat sb = {};
 	if (::sceIoGetstat(filename.c_str(), &sb) >= 0) {
+#  if(PSP)
+		return FIO_S_ISREG(sb.st_mode) ? FileType::File :
+			FIO_S_ISDIR(sb.st_mode) ? FileType::Directory :
+#  else
 		return SCE_S_ISREG(sb.st_mode) ? FileType::File :
 			SCE_S_ISDIR(sb.st_mode) ? FileType::Directory :
+#  endif
 			FileType::Other;
 	}
 	return FileType::Unknown;
 #else
 	struct stat sb = {};
-#  if defined(PLAYER_NINTENDO)
+#  if defined(PLAYER_NINTENDO) || defined(PSP)
 	// no symlink support (FAT)
 	(void)follow_symlinks;
 	auto fn = ::stat;
@@ -112,7 +117,7 @@ int64_t Platform::File::GetSize() const {
 	}
 
 	return ((int64_t)data.nFileSizeHigh << 32) | (int64_t)data.nFileSizeLow;
-#elif defined(__vita__)
+#elif defined(__vita__) || defined(PSP)
 	struct SceIoStat sb = {};
 	int result = ::sceIoGetstat(filename.c_str(), &sb);
 	return (result >= 0) ? (int64_t)sb.st_size : (int64_t)-1;
@@ -164,7 +169,7 @@ bool Platform::File::MakeDirectory(bool follow_symlinks) const {
 				return false;
 			}
 #else
-#  if defined(__vita__)
+#  if defined(__vita__) || defined(PSP)
 			int res = sceIoMkdir(cur_path.c_str(), 0777);
 #  else
 			int res = mkdir(cur_path.c_str(), 0777);
@@ -181,7 +186,7 @@ bool Platform::File::MakeDirectory(bool follow_symlinks) const {
 Platform::Directory::Directory(const std::string& name) {
 #if defined(_WIN32)
 	dir_handle = ::_wopendir(Utils::ToWideString(name.empty() ? "." : name).c_str());
-#elif defined(__vita__)
+#elif defined(__vita__) || defined(PSP)
 	dir_handle = ::sceIoDopen(name.empty() ? "." : name.c_str());
 #else
 	dir_handle = ::opendir(name.empty() ? "." : name.c_str());
@@ -193,7 +198,7 @@ Platform::Directory::~Directory() {
 }
 
 bool Platform::Directory::Read() {
-#if defined(__vita__)
+#if defined(__vita__) || defined(PSP)
 	assert(dir_handle >= 0);
 
 	valid_entry = ::sceIoDread(dir_handle, &entry) > 0;
@@ -215,7 +220,7 @@ bool Platform::Directory::Read() {
 std::string Platform::Directory::GetEntryName() const {
 	assert(valid_entry);
 
-#if defined(__vita__)
+#if defined(__vita__) || defined(PSP)
 	return entry.d_name;
 #elif defined(_WIN32)
 	return Utils::FromWideString(entry->d_name);
@@ -224,7 +229,7 @@ std::string Platform::Directory::GetEntryName() const {
 #endif
 }
 
-#ifndef __vita__
+#if !defined(__vita__) || !defined(PSP)
 static inline Platform::FileType GetEntryType(...) {
 	return Platform::FileType::Unknown;
 }
@@ -240,9 +245,14 @@ static inline Platform::FileType GetEntryType(T* entry) {
 Platform::FileType Platform::Directory::GetEntryType() const {
 	assert(valid_entry);
 
-#if defined(__vita__)
+#if defined(__vita__) || defined(PSP)
+#  if(PSP)
+	return FIO_S_ISREG(entry.d_stat.st_mode) ? FileType::File :
+			FIO_S_ISDIR(entry.d_stat.st_mode) ? FileType::Directory : FileType::Other;
+#  else
 	return SCE_S_ISREG(entry.d_stat.st_mode) ? FileType::File :
 			SCE_S_ISDIR(entry.d_stat.st_mode) ? FileType::Directory : FileType::Other;
+#  endif
 #else
 	return ::GetEntryType(entry);
 #endif
@@ -253,7 +263,7 @@ void Platform::Directory::Close() {
 #if defined(_WIN32)
 		::_wclosedir(dir_handle);
 		dir_handle = nullptr;
-#elif defined(__vita__)
+#elif defined(__vita__) || defined(PSP)
 		::sceIoDclose(dir_handle);
 		dir_handle = -1;
 #else

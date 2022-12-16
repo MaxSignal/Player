@@ -47,12 +47,16 @@ extern "C" int main(int argc, char* argv[]) {
 		args.push_back(Utils::FromWideString(argv_w[i]));
 	}
 	LocalFree(argv_w);
+#elif defined (PSP)
+	std::string psp_dir = "ms0:/";
+	args.push_back(" ");
+	args.push_back("--project-path");
+	args.push_back(psp_dir);
 #else
 	args.assign(argv, argv + argc);
 #endif
 
 	Player::Init(std::move(args));
 	Player::Run();
-
 	return EXIT_SUCCESS;
 }
