@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with EasyRPG Player. If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef UNDER_CE
+#include "wincehelper.h"
+#endif
 
 // Headers
 #include <iomanip>
@@ -117,6 +120,9 @@ void Window_Base::DrawActorTitle(const Game_Actor& actor, int cx, int cy) const 
 }
 
 void Window_Base::DrawActorClass(const Game_Actor& actor, int cx, int cy) const {
+	#ifdef UNDER_CE
+	#undef GetClassName
+	#endif
 	contents->TextDraw(cx, cy, Font::ColorDefault, actor.GetClassName());
 }
 

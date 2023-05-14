@@ -18,6 +18,9 @@
 // Headers
 #define _USE_MATH_DEFINES
 #include <cmath>
+#ifdef UNDER_CE
+#include "wincehelper.h"
+#endif
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
@@ -98,8 +101,10 @@ Bitmap::Bitmap(const std::string& filename, bool transparent, uint32_t flags) {
 	FILE* stream = FileFinder::fopenUTF8(filename, "rb");
 	if (!stream) {
 		Output::Error("Couldn't open image file %s", filename.c_str());
+		fclose(stream);
 		return;
 	}
+	
 
 	int w = 0;
 	int h = 0;
@@ -127,12 +132,12 @@ Bitmap::Bitmap(const std::string& filename, bool transparent, uint32_t flags) {
 		pixels = nullptr;
 		return;
 	}
-
 	Init(w, h, nullptr);
 
 	ConvertImage(w, h, pixels, transparent);
 
 	CheckPixels(flags);
+
 }
 
 Bitmap::Bitmap(const uint8_t* data, unsigned bytes, bool transparent, uint32_t flags) {
@@ -226,14 +231,15 @@ ImageOpacity Bitmap::ComputeImageOpacity(Rect rect) const {
 	auto* p = reinterpret_cast<const uint32_t*>(pixels());
 	const int stride = pitch() / sizeof(uint32_t);
 	const auto mask = pixel_format.rgba_to_uint32_t(0, 0, 0, 0xFF);
-
 	int xend = (rect.x + rect.width);
 	int yend = (rect.y + rect.height);
+
 	for (int y = rect.y * stride; y < yend * stride; y += stride) {
 		for (int x = rect.x; x < xend; ++x) {
 			auto px = p[x + y] & mask;
 			all_transp &= (px == 0);
 			all_opaque &= (px == mask);
+
 		}
 	}
 
@@ -260,7 +266,6 @@ void Bitmap::CheckPixels(uint32_t flags) {
 		const int h = height() / TILE_SIZE;
 		const int w = width() / TILE_SIZE;
 		tile_opacity = TileOpacity(w, h);
-
 		for (int ty = 0; ty < h; ++ty) {
 			for (int tx = 0; tx < w; ++tx) {
 				Rect rect(tx * TILE_SIZE, ty * TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -269,6 +274,7 @@ void Bitmap::CheckPixels(uint32_t flags) {
 			}
 		}
 	}
+
 
 	if (flags & Flag_ReadOnly) {
 		read_only = true;

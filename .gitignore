@@ -19,7 +19,6 @@ aclocal.m4
 config.h
 config.h.in
 config.status
-configure
 libtool
 /builds/autoconf/aux/
 /builds/autoconf/m4/*.m4
@@ -109,3 +108,7 @@ liblcf.pc
 
 # libretro
 easyrpg_libretro.*
+
+# etc
+src/wincehelper.cpp
+src/wincehelper.h

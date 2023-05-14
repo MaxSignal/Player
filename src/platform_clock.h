@@ -34,6 +34,9 @@ using Platform_Clock = NxClock;
 #elif defined(PSP2)
 #include "platform/psvita/psp2_clock.h"
 using Platform_Clock = Psp2Clock;
+#elif defined(UNDER_CE)
+#include <wince_clock.h>
+using Platform_Clock = WinceClock;
 #else
 #include "std_clock.h"
 using Platform_Clock = StdClock;

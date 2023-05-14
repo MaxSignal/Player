@@ -89,7 +89,7 @@ SdlUi::SdlUi(long width, long height, bool fs_flag) :
 
 	// Set some SDL environment variables before starting. These are platform
 	// dependent, so every port needs to set them manually
-#if !defined(GEKKO) && !defined(__MORPHOS__)
+#if !defined(GEKKO) && !defined(__MORPHOS__) && !defined(UNDER_CE)
 	// Set window position to the middle of the screen
 	putenv(const_cast<char *>("SDL_VIDEO_WINDOW_POS=center"));
 #endif
@@ -161,108 +161,10 @@ bool SdlUi::RequestVideoMode(int width, int height, bool fullscreen) {
 	current_display_mode.height = height;
 	current_display_mode.width = width;
 
-#ifdef OPENDINGUX
 	// Only one video mode for opendingux (320x240)
 	// SDL_ListModes is broken, we must return here
 	return true;
-#endif
 
-	if (vinfo->wm_available) {
-		toggle_fs_available = true;
-		// FIXME: this for may work, but is really confusing. Calling a method
-		// that does this with the desired flags would be nicer.
-		if (fullscreen) {
-			flags |= SDL_FULLSCREEN;
-		}
-		for (;;) {
-			modes = SDL_ListModes(NULL, flags);
-			if (modes != NULL) {
-				// Set up...
-				current_display_mode.flags = flags;
-
-				// All modes available
-				if (modes == (SDL_Rect **)-1) {
-					// If we have a high res, turn zoom on
-					if (vinfo->current_h > height*2 && vinfo->current_w > width*2)
-						current_display_mode.zoom = 2;
-#if defined(SUPPORT_ZOOM)
-					zoom_available = current_display_mode.zoom == 2;
-#else
-					zoom_available = false;
-#endif
-					return true;
-				} else {
-					int len = 0;
-					while (modes[len])
-						++len;
-
-					for (int i = len-1; i >= 0; --i) {
-						if (
-							(modes[i]->h == height && modes[i]->w == width)
-#if defined(SUPPORT_ZOOM)
-							|| (modes[i]->h == height*2 && modes[i]->w == width*2)
-#endif
-						) {
-							current_display_mode.zoom = modes[i]->w / width;
-							zoom_available = current_display_mode.zoom == 2;
-							return true;
-						}
-					}
-				}
-			}
-			// No modes available
-			if ((flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) {
-				// Try without fullscreen
-				flags &= ~SDL_FULLSCREEN;
-			} else {
-				// No mode available :(
-				return false;
-			}
-		}
-	} // wm_available
-
-	if (!fullscreen) {
-		// Stop here since we need a window manager for non fullscreen modes
-		return false;
-	}
-
-	// No hard accel and no window manager
-	flags = SDL_SWSURFACE | SDL_FULLSCREEN;
-
-	modes = SDL_ListModes(NULL, flags);
-	if (modes == NULL) {
-		// No video for you
-		return false;
-	}
-
-	if (modes == (SDL_Rect **)-1) {
-		// All modes available
-		current_display_mode.flags = flags;
-		current_display_mode.zoom = 1;
-		zoom_available = false;
-		return true;
-	}
-
-	int len = 0;
-	while (modes[len])
-		++len;
-
-	for (int i = len-1; i > 0; --i) {
-		if ((modes[i]->h == height && modes[i]->w == width)
-#if defined(SUPPORT_ZOOM)
-			|| (modes[i]->h == height*2 && modes[i]->w == width*2)
-#endif
-			) {
-				current_display_mode.flags = flags;
-				// FIXME: we have to find a way to make zoom possible only in windowed mode
-				current_display_mode.zoom = modes[i]->w / width;
-				zoom_available = current_display_mode.zoom == 2;
-				return true;
-		}
-	}
-
-	// Didn't find a suitable video mode
-	return false;
 }
 
 void SdlUi::BeginDisplayModeChange() {
@@ -300,7 +202,7 @@ void SdlUi::EndDisplayModeChange() {
 }
 
 bool SdlUi::RefreshDisplayMode() {
-	uint32_t flags = current_display_mode.flags;
+	uint32_t flags = SDL_HWSURFACE;
 	int display_width = current_display_mode.width;
 	int display_height = current_display_mode.height;
 
@@ -309,7 +211,7 @@ bool SdlUi::RefreshDisplayMode() {
 		display_height *= 2;
 	}
 
-	int bpp = current_display_mode.bpp;
+	int bpp = 16;
 
 	// Free non zoomed surface
 	main_surface.reset();

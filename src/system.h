@@ -90,7 +90,6 @@
 #else // Everything not catched above, e.g. Linux/*BSD/macOS
 #  define USE_WINE_REGISTRY
 #  define USE_XDG_RTP
-#  define SUPPORT_ZOOM
 #  define SUPPORT_MOUSE
 #  define SUPPORT_TOUCH
 #  define SUPPORT_JOYSTICK

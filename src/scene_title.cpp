@@ -108,7 +108,6 @@ void Scene_Title::Update() {
 		}
 		return;
 	}
-
 	command_window->Update();
 
 	if (Input::IsTriggered(Input::DECISION)) {

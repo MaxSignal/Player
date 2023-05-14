@@ -585,6 +585,9 @@ bool Game_Interpreter::ExecuteCommand() {
 			return CommandPlayBGM(com);
 		case Cmd::FadeOutBGM:
 			return CommandFadeOutBGM(com);
+			#ifdef UNDER_CE
+			#undef PlaySound
+			#endif
 		case Cmd::PlaySound:
 			return CommandPlaySound(com);
 		case Cmd::EndEventProcessing:

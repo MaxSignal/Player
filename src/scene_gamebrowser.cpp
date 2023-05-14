@@ -46,7 +46,7 @@ void Scene_GameBrowser::Start() {
 }
 
 void Scene_GameBrowser::Continue(SceneType /* prev_scene */) {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(UNDER_CE)
 	SetCurrentDirectory(L"..");
 #endif
 
@@ -172,7 +172,7 @@ void Scene_GameBrowser::UpdateGameListSelection() {
 }
 
 void Scene_GameBrowser::BootGame() {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(UNDER_CE)
 	SetCurrentDirectory(Utils::ToWideString(gamelist_window->GetGamePath()).c_str());
 	const std::string& path = ".";
 #else

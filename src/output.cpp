@@ -26,6 +26,11 @@
 #include <thread>
 #include <chrono>
 
+#ifdef UNDER_CE
+#include "wincehelper.h"
+#endif
+
+
 #include "graphics.h"
 
 #ifdef GEKKO

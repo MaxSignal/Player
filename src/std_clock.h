@@ -18,10 +18,14 @@
 #ifndef EP_STD_CLOCK_H
 #define EP_STD_CLOCK_H
 
+#ifdef UNDER_CE
+#include <windows.h>
+#endif
+
 #include <chrono>
 #include <thread>
 
-#if !defined(_3DS) && !defined(__SWITCH__) && !defined(PSP2)
+#if !defined(_3DS) && !defined(__SWITCH__) && !defined(PSP2) && !defined(UNDER_CE)
 struct StdClock {
 	using clock = std::chrono::steady_clock;
 
@@ -48,7 +52,14 @@ inline StdClock::time_point StdClock::now() {
 
 template <typename R, typename P>
 inline void StdClock::SleepFor(std::chrono::duration<R,P> dt) {
-	std::this_thread::sleep_for(dt);
+	#ifndef UNDER_CE
+	::std::this_thread::sleep_for(dt);
+	#else
+	std::chrono::milliseconds dt_ms = std::chrono::duration_cast<std::chrono::milliseconds>(dt);
+	DWORD dt_dw;
+	dt_dw << dt_ms.count();
+	::Sleep(dt_dw);
+	#endif
 }
 
 constexpr const char* StdClock::Name() {

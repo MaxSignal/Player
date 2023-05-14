@@ -40,6 +40,9 @@ void Window_SaveFile::UpdateCursorRect() {
 	Rect rect = Rect();
 
 	if (GetActive()) {
+		#ifdef UNDER_CE
+		#undef GetSaveFileName
+		#endif
 		rect = Rect(0, 0, Font::Default()->GetSize(GetSaveFileName()).width + 6, 16);
 	}
 

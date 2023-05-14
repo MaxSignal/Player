@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with EasyRPG Player. If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef UNDER_CE
+#include "wincehelper.h"
+#endif
 
 // Headers
 #include "window_actorsp.h"

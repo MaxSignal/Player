@@ -21,6 +21,18 @@
 #include <cassert>
 #include <utility>
 
+#ifdef UNDER_CE
+#include "wincehelper.h"
+#include <windows.h>
+/*std::wstring s2ws(const std::string& str)
+{
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+    std::wstring wstrTo( size_needed, 0 );
+    MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+    return wstrTo;
+}*/
+#endif
+
 #ifndef DT_UNKNOWN
 #define DT_UNKNOWN 0
 #endif
@@ -32,7 +44,7 @@
 #endif
 
 Platform::File::File(std::string name) :
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(UNDER_CE)
 		filename(Utils::ToWideString(name))
 #else
 		filename(std::move(name))
@@ -42,7 +54,7 @@ Platform::File::File(std::string name) :
 }
 
 bool Platform::File::Exists() const {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(UNDER_CE)
 	return ::GetFileAttributesW(filename.c_str()) != (DWORD)-1;
 #elif (defined(GEKKO) || defined(_3DS) || defined(__SWITCH__))
 	struct stat sb;
@@ -64,7 +76,7 @@ bool Platform::File::IsDirectory(bool follow_symlinks) const {
 }
 
 Platform::FileType Platform::File::GetType(bool follow_symlinks) const {
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(UNDER_CE)
 	(void)follow_symlinks;
 	int attribs = ::GetFileAttributesW(filename.c_str());
 
@@ -87,7 +99,7 @@ Platform::FileType Platform::File::GetType(bool follow_symlinks) const {
 	return FileType::Unknown;
 #else
 	struct stat sb = {};
-#  if (defined(GEKKO) || defined(_3DS) || defined(__SWITCH__))
+#  if (defined(GEKKO) || defined(_3DS) || defined(__SWITCH__) || defined(UNDER_CE))
 	(void)follow_symlinks;
 	auto fn = ::stat;
 #  else
@@ -103,7 +115,7 @@ Platform::FileType Platform::File::GetType(bool follow_symlinks) const {
 }
 
 int64_t Platform::File::GetSize() const {
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(UNDER_CE)
 	WIN32_FILE_ATTRIBUTE_DATA data;
 	BOOL res = ::GetFileAttributesExW(filename.c_str(),
 			GetFileExInfoStandard,
@@ -125,7 +137,13 @@ int64_t Platform::File::GetSize() const {
 }
 
 Platform::Directory::Directory(const std::string& name) {
-#if defined(_WIN32)
+#if defined(UNDER_CE)
+	printf("opendir(compat): %s\n", name.c_str());
+	dir_handle = FindFirstFile(Utils::ToWideString(name + "\\*").c_str(), &entry);
+	LOAD_FIRSTFILE = 1;
+	LOAD_FIRSTFILE_DATA = entry;
+#elif defined(_WIN32)
+//#if defined(_WIN32) && !defined(UNDER_CE)
 	dir_handle = ::_wopendir(Utils::ToWideString(name).c_str());
 #elif defined(PSP2)
 	dir_handle = ::sceIoDopen(name.c_str());
@@ -146,13 +164,30 @@ bool Platform::Directory::Read() {
 #else
 	assert(dir_handle);
 
-#	ifdef _WIN32
+#   if defined(UNDER_CE)
+	if (LOAD_FIRSTFILE == 0){
+		valid_entry = FindNextFile(dir_handle, &entry);
+	} else {
+		valid_entry = true;
+		entry = LOAD_FIRSTFILE_DATA;
+		LOAD_FIRSTFILE = 0;
+	}
+
+#	elif defined(_WIN32) && !defined(UNDER_CE)
 	entry = ::_wreaddir(dir_handle);
 #	else
 	entry = ::readdir(dir_handle);
 #	endif
 
+#ifndef UNDER_CE
 	valid_entry = entry != nullptr;
+/*#else
+	if (dir_handle != INVALID_HANDLE_VALUE) {
+		valid_entry = true;
+	} else {
+		valid_entry = false;
+	}*/
+#endif
 #endif
 
 	return valid_entry;
@@ -163,10 +198,14 @@ std::string Platform::Directory::GetEntryName() const {
 
 #if defined(PSP2)
 	return entry.d_name;
-#elif defined(_WIN32)
+#elif defined(UNDER_CE)
+    return Utils::FromWideString(entry.cFileName);
+#elif defined(_WIN32) && !defined(UNDER_CE)
 	return Utils::FromWideString(entry->d_name);
 #else
-	return entry->d_name;
+	char tempstr[260];
+	strncpy(tempstr, entry->d_name, strlen(entry->d_name)+1);
+	return (char*)entry->d_name;
 #endif
 }
 
@@ -196,7 +235,11 @@ Platform::FileType Platform::Directory::GetEntryType() const {
 
 void Platform::Directory::Close() {
 	if (*this) {
-#if defined(_WIN32)
+#if defined(UNDER_CE)
+		FindClose(dir_handle);
+		dir_handle = nullptr;
+		LOAD_FIRSTFILE = 0;
+#elif defined(_WIN32) && !defined(UNDER_CE)
 		::_wclosedir(dir_handle);
 		dir_handle = nullptr;
 #elif defined(PSP2)

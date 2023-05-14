@@ -19,7 +19,7 @@
 #  include <windows.h>
 #endif
 
-#if defined(_WIN32) && !defined(_ARM_)
+#if defined(_WIN32) && !defined(_ARM_) && !defined(UNDER_CE)
 
 // Headers
 #include <string>

@@ -14,20 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with EasyRPG Player. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "wince_clock.h"
 
-#include "player.h"
-#include "output.h"
-#include <cstdlib>
-
-// This is needed on Windows
-#ifdef USE_SDL
-#  include <SDL.h>
+#ifdef UNDER_CE
+constexpr bool WinceClock::is_steady;
 #endif
-
-extern "C" int main(int argc, char* argv[]) {
-	Player::Init(argc, argv);
-	Player::Run();
-	Output::Debug("OK");
-
-	return EXIT_SUCCESS;
-}

@@ -20,6 +20,9 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#ifdef UNDER_CE
+#include "wincehelper.h"
+#endif
 #include "utils.h"
 
 /** Contains helper functions for flash effect */

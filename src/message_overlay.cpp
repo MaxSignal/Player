@@ -16,6 +16,9 @@
  */
 
 #include <sstream>
+#ifdef UNDER_CE
+#include "wincehelper.h"
+#endif
 
 #include "message_overlay.h"
 #include "player.h"

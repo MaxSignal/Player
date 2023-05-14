@@ -82,6 +82,7 @@ std::unique_ptr<AudioSeCache> AudioSeCache::Create(const std::string& filename) 
 
 		if (!f) {
 			se.reset();
+			fclose(f);
 			return se;
 		}
 
@@ -95,8 +96,10 @@ std::unique_ptr<AudioSeCache> AudioSeCache::Create(const std::string& filename) 
 
 		if (!se->audio_decoder) {
 			se.reset();
+			fclose(f);
 			return se;
 		}
+		fclose(f);
 	}
 
 	return se;

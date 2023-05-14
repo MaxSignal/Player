@@ -164,7 +164,7 @@ void Game_Map::Setup(int _id, TeleportTarget::Type tt) {
 	for (const RPG::Event& ev : map->events) {
 		events.emplace_back(location.map_id, ev);
 	}
-
+	
 	// pan_state does not reset when you change maps.
 	location.pan_speed = default_pan_speed;
 	location.pan_finish_x = default_pan_x;

@@ -21,7 +21,7 @@
 // Headers
 #include "system.h"
 #include <string>
-#ifdef _WIN32
+#if defined(_WIN32)
 #  include <windows.h>
 #  include <sys/types.h>
 #  include <sys/stat.h>
@@ -95,7 +95,7 @@ namespace Platform {
 		int64_t GetSize() const;
 
 	private:
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(UNDER_CE)
 		const std::wstring filename;
 #else
 		const std::string filename;
@@ -138,7 +138,13 @@ namespace Platform {
 		explicit operator bool() const noexcept;
 
 	private:
-#if defined(_WIN32)
+#if defined(UNDER_CE)
+		HANDLE dir_handle = nullptr;
+		WIN32_FIND_DATA entry;
+		int LOAD_FIRSTFILE = 0;
+		WIN32_FIND_DATA LOAD_FIRSTFILE_DATA;
+#elif defined(_WIN32)
+//#if defined(_WIN32) && !defined(UNDER_CE)
 		_WDIR* dir_handle = nullptr;
 		struct _wdirent* entry = nullptr;
 #elif defined(PSP2)

@@ -17,6 +17,10 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#ifdef UNDER_CE
+#include "wincehelper.h"
+#endif
+
 #include "bitmap.h"
 #include "options.h"
 #include "cache.h"

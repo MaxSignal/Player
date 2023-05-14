@@ -17,7 +17,18 @@
 
 // Headers
 #include <cassert>
-#include <cerrno>
+#ifndef UNDER_CE
+	#include <cerrno>
+#else
+	#include "wincehelper.h"
+	#ifndef NO_ERRNO
+		#define NO_ERRNO
+	#endif
+	#ifndef NO_STRERROR
+		#define NO_STRERROR
+		char* strerror(int a);
+	#endif
+#endif
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -388,7 +399,7 @@ std::string FileFinder::GetPathInsideGamePath(const std::string& path_in) {
 	return FileFinder::GetPathInsidePath(GetDirectoryTree()->directory_path, path_in);
 }
 
-#if defined(_WIN32) && !defined(_ARM_)
+#if defined(_WIN32) && !defined(_ARM_) && !defined(UNDER_CE)
 std::string GetFontsPath() {
 	static std::string fonts_path = "";
 	static bool init = false;
@@ -402,7 +413,11 @@ std::string GetFontsPath() {
 		if (SHGetFolderPath(NULL, CSIDL_FONTS, NULL, SHGFP_TYPE_CURRENT, path) == S_OK)	{
 			char fpath[MAX_PATH];
 #ifdef UNICODE
+#ifndef UNDER_CE
 			WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS | WC_COMPOSITECHECK, path, MAX_PATH, fpath, MAX_PATH, NULL, NULL);
+#else
+			WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, path, MAX_PATH, fpath, MAX_PATH, NULL, NULL);
+#endif
 #endif
 			fonts_path = FileFinder::MakePath(fpath, "");
 		}
@@ -439,7 +454,7 @@ std::string FileFinder::FindFont(const std::string& name) {
 		".ttf", ".ttc", ".otf", ".fon", NULL, };
 	std::string path = FindFile("Font", name, FONTS_TYPES);
 
-#if defined(_WIN32) && !defined(_ARM_)
+#if defined(_WIN32) && !defined(_ARM_) && !defined(UNDER_CE)
 	if (!path.empty()) {
 		return path;
 	}
@@ -496,7 +511,7 @@ static void add_rtp_path(const std::string& p) {
 	}
 }
 
-#if defined(USE_WINE_REGISTRY) || defined(_WIN32)
+#if (defined(USE_WINE_REGISTRY) || defined(_WIN32)) && !defined(UNDER_CE)
 static void read_rtp_registry(const std::string& company, const std::string& product, const std::string& key) {
 	std::string rtp_path = Registry::ReadStrValue(HKEY_CURRENT_USER, "Software\\" + company + "\\" + product, key, KEY32);
 	if (!rtp_path.empty()) {
@@ -563,7 +578,9 @@ void FileFinder::InitRtpPaths(bool no_rtp, bool no_rtp_warnings) {
 	env->DeleteLocalRef(sdl_activity);
 	env->DeleteLocalRef(cls);
 	add_rtp_path(cs + "/" + version_str);
-#elif defined(USE_WINE_REGISTRY) || defined(_WIN32)
+#elif defined(UNDER_CE)
+	add_rtp_path("\\Storage Card\\easyrpg\\data\\rtp\\" + version_str);
+#elif (defined(USE_WINE_REGISTRY) || defined(_WIN32)) && !defined(UNDER_CE)
 	std::string const product = "RPG" + version_str;
 	if (Player::IsRPG2k()) {
 		// Prefer original 2000 RTP over Kadokawa, because there is no
@@ -647,9 +664,11 @@ void FileFinder::Quit() {
 }
 
 FILE* FileFinder::fopenUTF8(const std::string& name_utf8, char const* mode) {
-#ifdef _WIN32
+#if (defined _WIN32) && !(defined UNDER_CE)
 	return _wfopen(Utils::ToWideString(name_utf8).c_str(),
 				   Utils::ToWideString(mode).c_str());
+#elif defined (UNDER_CE)
+	return wceh_fopen(name_utf8.c_str(), mode);
 #else
 	return fopen(name_utf8.c_str(), mode);
 #endif
@@ -793,7 +812,7 @@ FileFinder::Directory FileFinder::GetDirectoryMembers(const std::string& path, F
 	Platform::Directory dir(path);
 	if (!dir) {
 		Output::Debug("Error opening dir %s: %s", path.c_str(),
-					  ::strerror(errno));
+					  ::strerror(1));
 		return result;
 	}
 

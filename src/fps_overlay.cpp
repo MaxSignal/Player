@@ -16,6 +16,10 @@
  */
 
 #include <sstream>
+#include <string>
+#ifdef UNDER_CE
+#include "wincehelper.h"
+#endif
 
 #include "fps_overlay.h"
 #include "game_clock.h"

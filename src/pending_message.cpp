@@ -1,3 +1,6 @@
+#ifdef UNDER_CE
+#include "wincehelper.h"
+#endif
 #include "pending_message.h"
 #include "game_variables.h"
 #include "game_actors.h"

@@ -262,11 +262,13 @@ void SdlMixerAudio::BGM_Play(std::string const& file, int volume, int pitch, int
 	FILE* filehandle = FileFinder::fopenUTF8(file, "rb");
 	if (!filehandle) {
 		Output::Warning("Music not readable: %s", FileFinder::GetPathInsideGamePath(file).c_str());
+		fclose(filehandle);
 		return;
 	}
 	audio_decoder = AudioDecoder::Create(filehandle, file);
 	if (audio_decoder) {
 		SetupAudioDecoder(filehandle, file, volume, pitch, fadein);
+		fclose(filehandle);
 		return;
 	}
 	fclose(filehandle);
@@ -334,7 +336,7 @@ void SdlMixerAudio::BGM_Play(std::string const& file, int volume, int pitch, int
 
 	BGM_Volume(volume);
 	if (
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(UNDER_CE)
 		(mtype == MUS_MID && WindowsUtils::GetWindowsVersion() >= 6
 			? Mix_PlayMusic(bgm.get(), 0) : Mix_FadeInMusic(bgm.get(), 0, fadein))
 #else
@@ -509,7 +511,7 @@ void SdlMixerAudio::BGM_Fade(int fade) {
 		return;
 	}
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(UNDER_CE)
 	// FIXME: Because of design change in Vista and higher reducing Midi volume
 	// alters volume of whole application and mutes it forever when restarted.
 	// Fading out midi music was disabled for Windows.

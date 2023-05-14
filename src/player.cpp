@@ -16,6 +16,10 @@
  */
 
 // Headers
+#ifdef UNDER_CE
+#include "wincehelper.h"
+#include "wincehelper.cpp"
+#endif
 
 #include <algorithm>
 #include <cstring>
@@ -164,7 +168,7 @@ void Player::Init(int argc, char *argv[]) {
 	romfsInit();
 #endif
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(UNDER_CE)
 	WindowsUtils::InitMiniDumpWriter();
 #endif
 
@@ -226,6 +230,7 @@ void Player::Run() {
 #  endif
 		MainLoop();
 	}
+	
 #endif
 }
 
@@ -308,9 +313,10 @@ void Player::UpdateInput() {
 		DisplayUi->ToggleZoom();
 	}
 	float speed = 1.0;
-	if (Input::IsSystemPressed(Input::FAST_FORWARD)) {
-		speed = Input::IsPressed(Input::PLUS) ? 10 : speed_modifier;
-	}
+	// if (Input::IsSystemPressed(Input::FAST_FORWARD)) {
+	// 	speed = Input::IsPressed(Input::PLUS) ? 10 : speed_modifier;
+	// }
+	// speed = 3;
 	Game_Clock::SetGameSpeedFactor(speed);
 
 	if (Main_Data::game_quit) {
@@ -425,7 +431,7 @@ void Player::ParseCommandLine(int argc, char *argv[]) {
 #ifdef _3DS
 	is_3dsx = argc > 0;
 #endif
-#if defined(_WIN32) && !defined(__WINRT__)
+#if defined(_WIN32) && !defined(UNDER_CE) && !defined(__WINRT__)
 	int argc_w;
 	LPWSTR *argv_w = CommandLineToArgvW(GetCommandLineW(), &argc_w);
 #endif
@@ -458,7 +464,7 @@ void Player::ParseCommandLine(int argc, char *argv[]) {
 	std::stringstream ss;
 	for (int i = 1; i < argc; ++i) {
 		ss << argv[i] << " ";
-#if defined(_WIN32) && !defined(__WINRT__)
+#if defined(_WIN32) && !defined(UNDER_CE) && !defined(__WINRT__)
 		args.push_back(Utils::LowerCase(Utils::FromWideString(argv_w[i])));
 #else
 		args.push_back(Utils::LowerCase(argv[i]));
@@ -549,7 +555,7 @@ void Player::ParseCommandLine(int argc, char *argv[]) {
 			if (it == args.end()) {
 				return;
 			}
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(UNDER_CE)
 			Main_Data::SetProjectPath(*it);
 			BOOL cur_dir = SetCurrentDirectory(Utils::ToWideString(Main_Data::GetProjectPath()).c_str());
 			if (cur_dir) {
@@ -689,7 +695,7 @@ void Player::ParseCommandLine(int argc, char *argv[]) {
 #endif
 	}
 
-#if defined(_WIN32) && !defined(__WINRT__)
+#if defined(_WIN32) && !defined(UNDER_CE) && !defined(__WINRT__)
 	LocalFree(argv_w);
 #endif
 }

@@ -33,6 +33,12 @@
 #include "pending_message.h"
 #include "compiler.h"
 
+#include <string>
+#ifdef UNDER_CE
+#include "wincehelper.h"
+#endif
+
+
 constexpr int max_level_2k = 50;
 constexpr int max_level_2k3 = 99;
 
@@ -1191,6 +1197,11 @@ void Game_Actor::ChangeClass(int new_class_id,
 			break;
 	}
 }
+
+#ifdef UNDER_CE
+#undef GetClassName
+#endif
+
 
 std::string Game_Actor::GetClassName() const {
     if (!GetClass()) {
