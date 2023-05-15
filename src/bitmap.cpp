@@ -236,7 +236,8 @@ ImageOpacity Bitmap::ComputeImageOpacity(Rect rect) const {
 
 	for (int y = rect.y * stride; y < yend * stride; y += stride) {
 		for (int x = rect.x; x < xend; ++x) {
-			auto px = p[x + y] & mask;
+			// auto px = p[x + y] & mask;
+			int px = 10000;
 			all_transp &= (px == 0);
 			all_opaque &= (px == mask);
 
