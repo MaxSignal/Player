@@ -109,6 +109,3 @@ liblcf.pc
 # libretro
 easyrpg_libretro.*
 
-# etc
-src/wincehelper.cpp
-src/wincehelper.h
