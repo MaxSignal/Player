@@ -236,8 +236,7 @@ ImageOpacity Bitmap::ComputeImageOpacity(Rect rect) const {
 
 	for (int y = rect.y * stride; y < yend * stride; y += stride) {
 		for (int x = rect.x; x < xend; ++x) {
-			// auto px = p[x + y] & mask;
-			int px = 10000;
+			auto px = p[x + y] & mask;
 			all_transp &= (px == 0);
 			all_opaque &= (px == mask);
 
@@ -271,6 +270,7 @@ void Bitmap::CheckPixels(uint32_t flags) {
 			for (int tx = 0; tx < w; ++tx) {
 				Rect rect(tx * TILE_SIZE, ty * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 				auto op = ComputeImageOpacity(rect);
+				// auto op = ComputeImageOpacity();
 				tile_opacity.Set(tx, ty, op);
 			}
 		}

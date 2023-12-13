@@ -426,7 +426,8 @@ libeasyrpg_player_a_CXXFLAGS = \
 	$(OPUS_CFLAGS) \
 	$(SNDFILE_CFLAGS) \
 	$(XMP_CFLAGS) \
-	$(SPEEXDSP_CFLAGS)
+	$(SPEEXDSP_CFLAGS) -DUNDER_CE -DUNICODE  -fpermissive -traditional -U__STRICT_ANSI__
+
 
 libeasyrpg_player_a_OBJCXXFLAGS = $(libeasyrpg_player_a_CXXFLAGS)
 

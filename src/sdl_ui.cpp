@@ -215,7 +215,7 @@ bool SdlUi::RefreshDisplayMode() {
 
 	// Free non zoomed surface
 	main_surface.reset();
-	sdl_surface = SDL_SetVideoMode(display_width, display_height, bpp, flags);
+	sdl_surface = SDL_SetVideoMode(display_width, display_height, 32, SDL_HWSURFACE | SDL_FULLSCREEN);
 
 	if (!sdl_surface)
 		return false;

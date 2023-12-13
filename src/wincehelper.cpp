@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "wincehelper.h"
 
@@ -63,9 +64,42 @@ static int utf8towchar(const char *utf8, wchar_t **outbuf)
   return 0;
 }
 
+std::string replaceOtherStr(std::string &replacedStr, std::string from, std::string to) {
+    const unsigned int pos = replacedStr.find(from);
+    const int len = from.length();
+
+    if (pos == std::string::npos || from.empty()) {
+        return replacedStr;
+    }
+
+    return replacedStr.replace(pos, len, to);
+}
+
 FILE *wceh_fopen(const char *filename, const char *mode) {
 	FILE *ret;
 	printf("fopen: %s\n", filename);
+
+  // const char* mid_position = strstr(filename, "mid");
+  // if (mid_position != NULL) {
+  //     // Replace "mid" with "wav"
+  //     char modified_filename[MAX_PATH + 1];
+  //     strncpy(modified_filename, filename, mid_position - filename); // Copy before "mid"
+  //     modified_filename[mid_position - filename] = '\0'; // Null-terminate
+  //     strcat(modified_filename, "wav"); // Append "wav"
+  //     strcat(modified_filename, mid_position + 3); // Copy the rest after "mid"
+  //     printf("Modified filename: %s\n", modified_filename);
+
+  //     wchar_t *filename_wc;
+  //     utf8towchar(modified_filename, &filename_wc);
+  //     wchar_t *mode_wc;
+  //     utf8towchar(mode, &mode_wc);
+  //     //ret = fopen(filename, mode);
+  //     ret = _wfopen(filename_wc, mode_wc);
+  //     if (ret != NULL){
+  //       return ret;
+  //     }
+  // }
+  
   wchar_t *filename_wc;
   utf8towchar(filename, &filename_wc);
   wchar_t *mode_wc;
@@ -91,7 +125,7 @@ FILE *wceh_fopen(const char *filename, const char *mode) {
     printf("fopen OK1.\n");
     ret = _fdopen((HANDLE)hret, mode);*/
 	}
-	if (ret == NULL) {
+	if (ret == NULL) {  
 		printf("file not found!!\n");
 		//exit(1);
 	}

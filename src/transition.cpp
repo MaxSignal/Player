@@ -355,7 +355,7 @@ void Transition::Draw(Bitmap& dst) {
 		break;
 	case TransitionMosaicIn:
 	case TransitionMosaicOut:
-		// If TransitionMosaicIn, invert percentage and screen:
+		// if TransitionMosaicIn, invert percentage and screen:d
 		if (transition_type == TransitionMosaicIn) { percentage = 100 - percentage; }
 		screen_pointer1 = transition_type == TransitionMosaicIn ? screen2 : screen1;
 

@@ -109,3 +109,6 @@ liblcf.pc
 # libretro
 easyrpg_libretro.*
 
+.lineno
+t2.txt
+t.txt
