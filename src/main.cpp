@@ -18,6 +18,7 @@
 #include "player.h"
 #include "output.h"
 #include <cstdlib>
+#include <string.h>
 
 // This is needed on Windows
 #ifdef USE_SDL
@@ -27,7 +28,6 @@
 extern "C" int main(int argc, char* argv[]) {
 	Player::Init(argc, argv);
 	Player::Run();
-	Output::Debug("OK");
 
 	return EXIT_SUCCESS;
 }

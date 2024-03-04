@@ -473,6 +473,7 @@ void Player::ParseCommandLine(int argc, char *argv[]) {
 	Output::Debug("CLI: %s", ss.str().c_str());
 
 	std::vector<std::string>::const_iterator it;
+	SetTargetFps(30);
 
 	for (it = args.begin(); it != args.end(); ++it) {
 		if (*it == "window" || *it == "--window") {
