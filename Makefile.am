@@ -360,6 +360,11 @@ libeasyrpg_player_a_SOURCES = \
 	src/window_teleport.h \
 	src/window_varlist.cpp \
 	src/window_varlist.h
+	src/wince_clock.cpp
+	src/wince_clock.h
+	src/wince_input_buttons.cpp
+	src/wincehelper.cpp
+	src/wincehelper.h
 
 if WANT_FMMIDI
 libeasyrpg_player_a_SOURCES += \
