@@ -30,6 +30,7 @@ stamp-h1
 /output
 /utils
 /directorytree
+configure
 
 # cmake
 CMakeFiles/
@@ -108,7 +109,3 @@ liblcf.pc
 
 # libretro
 easyrpg_libretro.*
-
-.lineno
-t2.txt
-t.txt
