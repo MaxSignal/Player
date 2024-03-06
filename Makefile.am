@@ -430,13 +430,13 @@ libeasyrpg_player_a_CXXFLAGS = \
 	$(OPUS_CFLAGS) \
 	$(SNDFILE_CFLAGS) \
 	$(XMP_CFLAGS) \
-	$(SPEEXDSP_CFLAGS) -DUNDER_CE -DUNICODE  -fpermissive -traditional -U__STRICT_ANSI__
+	$(SPEEXDSP_CFLAGS) -DUNDER_CE -DUNICODE -fpermissive -traditional -U__STRICT_ANSI__
 
 
 libeasyrpg_player_a_OBJCXXFLAGS = $(libeasyrpg_player_a_CXXFLAGS)
 
 easyrpg_player_SOURCES = src/main.cpp
-easyrpg_player_CXXFLAGS = $(libeasyrpg_player_a_CXXFLAGS)
+easyrpg_player_CXXFLAGS = $(libeasyrpg_player_a_CXXFLAGS) resources/player.res
 easyrpg_player_LDADD = libeasyrpg-player.a \
 	$(LCF_LIBS) \
 	$(PIXMAN_LIBS) \
@@ -452,7 +452,7 @@ easyrpg_player_LDADD = libeasyrpg-player.a \
 	$(OPUS_LIBS) \
 	$(SNDFILE_LIBS) \
 	$(XMP_LIBS) \
-	$(SPEEXDSP_LIBS)
+	$(SPEEXDSP_LIBS) 
 
 if MACOS
 easyrpg_player_LDFLAGS = -framework Foundation
@@ -507,7 +507,7 @@ test_runner_SOURCES = \
 test_runner_CXXFLAGS = \
 	$(libeasyrpg_player_a_CXXFLAGS) -DEP_TEST_PATH=\"$(srcdir)/tests\"
 test_runner_LDADD = \
-	$(easyrpg_player_LDADD)
+	$(easyrpg_player_LDADD)	
 
 check-local:
 	$(AM_V_at)./test_runner

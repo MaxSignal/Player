@@ -74,7 +74,7 @@ AS_IF([test "x$with_libwildmidi" != "xno"],[
 AC_ARG_WITH([oggvorbis],[AS_HELP_STRING([--without-oggvorbis],
 	[Disable Ogg Vorbis support @<:@default=auto@:>@])])
 AS_IF([test "x$with_oggvorbis" != "xno"],[
-	PKG_CHECK_MODULES([OGGVORBIS],[vorbisfile],[AC_DEFINE(HAVE_OGGVORBIS,[1],[Enable Ogg Vorbis support])],[auto_oggvorbis=0])
+	PKG_CHECK_MODULES([OGGVORBIS],[vorbisidec],[AC_DEFINE(HAVE_OGGVORBIS,[1],[Enable Ogg Vorbis support])],[auto_oggvorbis=0])
 ])
 AC_ARG_WITH([opus],[AS_HELP_STRING([--without-opus],
 	[Disable Opus support @<:@default=auto@:>@])])
