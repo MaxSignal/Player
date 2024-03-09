@@ -1,3 +1,12 @@
+///////////////////////////////////////////////////////////////////////////////
+//  wincehelper.cpp
+//  WinCE での動作を前提としていないプログラムを
+//  WinCE で動かせるようにするための自作関数
+//  (C) HO_0520_IT
+//  CC0, Unlicense, WTFPL Version 2, NYSL Version 0.9982
+//  https://github.com/HO-0520-IT/wincehelper
+///////////////////////////////////////////////////////////////////////////////
+
 #undef __STRICT_ANSI__
 #include <io.h>
 #include <stdio.h>
@@ -46,33 +55,6 @@ int wceh_CHDIR(const char *dirname) {
 	} else {
 		return -1;
 	}
-}
-
-////////////////////////////////////////////
-//utf8towchar() is part of gcc source code//
-////////////////////////////////////////////
-
-static int utf8towchar(const char *utf8, wchar_t **outbuf)
-{
-  size_t buflen = MultiByteToWideChar(CP_UTF8, 0, utf8, -1, (void *)0, 0);
-  wchar_t *buf = (wchar_t*)calloc(buflen, sizeof(wchar_t));
-  if (MultiByteToWideChar(CP_UTF8, 0, utf8, -1, buf, buflen) == 0) {
-    free(buf);
-    return -1;
-  }
-  *outbuf = buf;
-  return 0;
-}
-
-std::string replaceOtherStr(std::string &replacedStr, std::string from, std::string to) {
-    const unsigned int pos = replacedStr.find(from);
-    const int len = from.length();
-
-    if (pos == std::string::npos || from.empty()) {
-        return replacedStr;
-    }
-
-    return replacedStr.replace(pos, len, to);
 }
 
 FILE *wceh_fopen(const char *filename, const char *mode) {
@@ -132,9 +114,44 @@ FILE *wceh_fopen(const char *filename, const char *mode) {
 	return ret;
 }
 
-/////////////////////////////////////////////
-//this namespace is part of gcc source code//
-/////////////////////////////////////////////
+/* These functions and namespaces are part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+static int utf8towchar(const char *utf8, wchar_t **outbuf)
+{
+  size_t buflen = MultiByteToWideChar(CP_UTF8, 0, utf8, -1, (void *)0, 0);
+  wchar_t *buf = (wchar_t*)calloc(buflen, sizeof(wchar_t));
+  if (MultiByteToWideChar(CP_UTF8, 0, utf8, -1, buf, buflen) == 0) {
+    free(buf);
+    return -1;
+  }
+  *outbuf = buf;
+  return 0;
+}
+
+std::string replaceOtherStr(std::string &replacedStr, std::string from, std::string to) {
+    const unsigned int pos = replacedStr.find(from);
+    const int len = from.length();
+
+    if (pos == std::string::npos || from.empty()) {
+        return replacedStr;
+    }
+
+    return replacedStr.replace(pos, len, to);
+}
 
 namespace std {
   std::string to_string(int val)
