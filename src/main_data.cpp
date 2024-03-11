@@ -93,13 +93,13 @@ void Main_Data::Init() {
 			#else
 			wceh_getcwd(working_dir, 255);
 			#endif
-			printf("working_dir: ");
-			printf(working_dir);
-			printf("\n");
+			// printf("working_dir: ");
+			// printf(working_dir);
+			// printf("\n");
 			project_path = std::string(working_dir);
-			printf("project_path: ");
-			printf(project_path.c_str());
-			printf("\n");
+			// printf("project_path: ");
+			// printf(project_path.c_str());
+			// printf("\n");
 #elif defined(PSP2)
 			// Check if app0 filesystem contains the title id reference file
 			FILE* f = fopen("app0:/titleid.txt","r");
@@ -166,9 +166,9 @@ void Main_Data::Init() {
 #endif
 		}
 	}
-	printf("project_path: ");
-	printf(project_path.c_str());
-	printf("\n");
+	// printf("project_path: ");
+	// printf(project_path.c_str());
+	// printf("\n");
 }
 
 

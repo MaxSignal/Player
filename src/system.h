@@ -73,7 +73,9 @@
 #  define SUPPORT_JOYSTICK_HAT
 #  define SUPPORT_JOYSTICK_AXIS
 #elif defined(_WIN32)
+#ifndef UNDER_CE
 #  define SUPPORT_ZOOM
+#endif
 #  define SUPPORT_MOUSE
 #  define SUPPORT_TOUCH
 #  define SUPPORT_JOYSTICK

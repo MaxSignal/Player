@@ -19,6 +19,7 @@
 #define EP_KEYS_H
 
 // Headers
+#include <unordered_map>
 #include "system.h"
 
 namespace Input {
@@ -199,6 +200,9 @@ namespace Input {
 			KEYS_COUNT
 		};
 	}
+
+	extern std::unordered_map<std::string, Keys::InputKey> keyMap;
+	extern std::unordered_map<Keys::InputKey, std::string> reverseKeyMap;
 }
 
 #endif

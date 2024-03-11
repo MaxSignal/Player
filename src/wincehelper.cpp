@@ -20,12 +20,14 @@
 
 #include "wincehelper.h"
 
+static int utf8towchar(const char *utf8, wchar_t **outbuf);
+
 char wceh_cwd[MAX_PATH + 1] = "";
 char *wceh_getcwd(char *buffer, int maxlen) {
 	if (wceh_cwd[0] == 0) {
 		TCHAR buf[MAX_PATH + 1];
 		if (GetModuleFileName(NULL, buf, MAX_PATH) == 0) {
-			printf("Fatal error. GetModuleFileName failed.\n");
+			// printf("Fatal error. GetModuleFileName failed.\n");
 			exit(1);
 		}
 		char buf_char[MAX_PATH + 1] = "";
@@ -37,20 +39,23 @@ char *wceh_getcwd(char *buffer, int maxlen) {
 		wceh_cwd[dir_backslash - buf_char + 2] = '\0';
 	}
 	if (maxlen <= strlen(wceh_cwd) ) {
-		printf("Fatal error. Insufficient \"buffer\" length.\n");
+		// printf("Fatal error. Insufficient \"buffer\" length.\n");
 		exit(1);
 	}
 	strncpy(buffer, wceh_cwd, strlen(wceh_cwd)+1);
-	printf("wceh_cwd set: %s\n", wceh_cwd);
-  printf("buffer set: %s\n", buffer);
+	// printf("wceh_cwd set: %s\n", wceh_cwd);
+  // printf("buffer set: %s\n", buffer);
 	return wceh_cwd;
 }
 
+char *get_wceh_cwd() {
+  return wceh_cwd;
+}
 
 int wceh_CHDIR(const char *dirname) {
 	if ((dirname[0] != 0) && (strlen(dirname) <= MAX_PATH + 1)) {
 		strncpy(wceh_cwd, dirname, strlen(dirname)+1);
-		printf("wceh_CHDIR set: %s\n", wceh_cwd);
+		// printf("wceh_CHDIR set: %s\n", wceh_cwd);
 		return 0;
 	} else {
 		return -1;
@@ -59,7 +64,7 @@ int wceh_CHDIR(const char *dirname) {
 
 FILE *wceh_fopen(const char *filename, const char *mode) {
 	FILE *ret;
-	printf("fopen: %s\n", filename);
+	// printf("fopen: %s\n", filename);
 
   // const char* mid_position = strstr(filename, "mid");
   // if (mid_position != NULL) {
@@ -97,7 +102,7 @@ FILE *wceh_fopen(const char *filename, const char *mode) {
 		// strncpy(buf, wceh_cwd, strlen(wceh_cwd)+1);
     // printf("ret_fopen: %s\n", buf);
 		strncat(buf, filename, strlen(filename)+1);
-		printf("fopen: %s\n", buf);
+		// printf("fopen: %s\n", buf);
     wchar_t *buf_wc;
     utf8towchar(buf, &buf_wc);
 		//ret = fopen(buf, mode);
@@ -108,7 +113,7 @@ FILE *wceh_fopen(const char *filename, const char *mode) {
     ret = _fdopen((HANDLE)hret, mode);*/
 	}
 	if (ret == NULL) {  
-		printf("file not found!!\n");
+		// printf("file not found!!\n");
 		//exit(1);
 	}
 	return ret;

@@ -161,10 +161,108 @@ bool SdlUi::RequestVideoMode(int width, int height, bool fullscreen) {
 	current_display_mode.height = height;
 	current_display_mode.width = width;
 
+#if defined(OPENDINGUX) || defined(UNDER_CE)
 	// Only one video mode for opendingux (320x240)
 	// SDL_ListModes is broken, we must return here
 	return true;
+#endif
 
+	if (vinfo->wm_available) {
+		toggle_fs_available = true;
+		// FIXME: this for may work, but is really confusing. Calling a method
+		// that does this with the desired flags would be nicer.
+		if (fullscreen) {
+			flags |= SDL_FULLSCREEN;
+		}
+		for (;;) {
+			modes = SDL_ListModes(NULL, flags);
+			if (modes != NULL) {
+				// Set up...
+				current_display_mode.flags = flags;
+
+				// All modes available
+				if (modes == (SDL_Rect **)-1) {
+					// If we have a high res, turn zoom on
+					if (vinfo->current_h > height*2 && vinfo->current_w > width*2)
+						current_display_mode.zoom = 2;
+#if defined(SUPPORT_ZOOM)
+					zoom_available = current_display_mode.zoom == 2;
+#else
+					zoom_available = false;
+#endif
+					return true;
+				} else {
+					int len = 0;
+					while (modes[len])
+						++len;
+
+					for (int i = len-1; i >= 0; --i) {
+						if (
+							(modes[i]->h == height && modes[i]->w == width)
+#if defined(SUPPORT_ZOOM)
+							|| (modes[i]->h == height*2 && modes[i]->w == width*2)
+#endif
+						) {
+							current_display_mode.zoom = modes[i]->w / width;
+							zoom_available = current_display_mode.zoom == 2;
+							return true;
+						}
+					}
+				}
+			}
+			// No modes available
+			if ((flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) {
+				// Try without fullscreen
+				flags &= ~SDL_FULLSCREEN;
+			} else {
+				// No mode available :(
+				return false;
+			}
+		}
+	} // wm_available
+
+	if (!fullscreen) {
+		// Stop here since we need a window manager for non fullscreen modes
+		return false;
+	}
+
+	// No hard accel and no window manager
+	flags = SDL_SWSURFACE | SDL_FULLSCREEN;
+
+	modes = SDL_ListModes(NULL, flags);
+	if (modes == NULL) {
+		// No video for you
+		return false;
+	}
+
+	if (modes == (SDL_Rect **)-1) {
+		// All modes available
+		current_display_mode.flags = flags;
+		current_display_mode.zoom = 1;
+		zoom_available = false;
+		return true;
+	}
+
+	int len = 0;
+	while (modes[len])
+		++len;
+
+	for (int i = len-1; i > 0; --i) {
+		if ((modes[i]->h == height && modes[i]->w == width)
+#if defined(SUPPORT_ZOOM)
+			|| (modes[i]->h == height*2 && modes[i]->w == width*2)
+#endif
+			) {
+				current_display_mode.flags = flags;
+				// FIXME: we have to find a way to make zoom possible only in windowed mode
+				current_display_mode.zoom = modes[i]->w / width;
+				zoom_available = current_display_mode.zoom == 2;
+				return true;
+		}
+	}
+
+	// Didn't find a suitable video mode
+	return false;
 }
 
 void SdlUi::BeginDisplayModeChange() {
@@ -202,7 +300,7 @@ void SdlUi::EndDisplayModeChange() {
 }
 
 bool SdlUi::RefreshDisplayMode() {
-	uint32_t flags = SDL_HWSURFACE;
+	uint32_t flags = SDL_HWSURFACE | SDL_FULLSCREEN;
 	int display_width = current_display_mode.width;
 	int display_height = current_display_mode.height;
 
@@ -211,11 +309,11 @@ bool SdlUi::RefreshDisplayMode() {
 		display_height *= 2;
 	}
 
-	int bpp = 16;
+	int bpp = 32;
 
 	// Free non zoomed surface
 	main_surface.reset();
-	sdl_surface = SDL_SetVideoMode(display_width, display_height, 32, SDL_HWSURFACE | SDL_FULLSCREEN);
+	sdl_surface = SDL_SetVideoMode(display_width, display_height, bpp, flags);
 
 	if (!sdl_surface)
 		return false;
@@ -602,9 +700,40 @@ bool SdlUi::IsFullscreen() {
 #if defined(USE_KEYBOARD) && defined(SUPPORT_KEYBOARD)
 Input::Keys::InputKey SdlKey2InputKey(SDLKey sdlkey) {
 	switch (sdlkey) {
-		case SDLK_BACKSPACE		: return Input::Keys::BACKSPACE; //後退
-		case SDLK_RETURN		: return Input::Keys::RETURN; //決定
-		case SDLK_ESCAPE		: return Input::Keys::ESCAPE; //戻る
+		case SDLK_BACKSPACE		: return Input::Keys::BACKSPACE;
+		case SDLK_TAB			: return Input::Keys::TAB;
+		case SDLK_CLEAR			: return Input::Keys::CLEAR;
+		case SDLK_RETURN		: return Input::Keys::RETURN;
+		case SDLK_PAUSE			: return Input::Keys::PAUSE;
+		case SDLK_ESCAPE		: return Input::Keys::ESCAPE;
+		case SDLK_SPACE			: return Input::Keys::SPACE;
+		case SDLK_PAGEUP		: return Input::Keys::PGUP;
+		case SDLK_PAGEDOWN		: return Input::Keys::PGDN;
+		case SDLK_END			: return Input::Keys::ENDS;
+		case SDLK_HOME			: return Input::Keys::HOME;
+		case SDLK_LEFT			: return Input::Keys::LEFT;
+		case SDLK_UP			: return Input::Keys::UP;
+		case SDLK_RIGHT			: return Input::Keys::RIGHT;
+		case SDLK_DOWN			: return Input::Keys::DOWN;
+		case SDLK_PRINT			: return Input::Keys::SNAPSHOT;
+		case SDLK_INSERT		: return Input::Keys::INSERT;
+		case SDLK_DELETE		: return Input::Keys::DEL;
+		case SDLK_LSHIFT		: return Input::Keys::LSHIFT;
+		case SDLK_RSHIFT		: return Input::Keys::RSHIFT;
+		case SDLK_LCTRL			: return Input::Keys::LCTRL;
+		case SDLK_RCTRL			: return Input::Keys::RCTRL;
+		case SDLK_LALT			: return Input::Keys::LALT;
+		case SDLK_RALT			: return Input::Keys::RALT;
+		case SDLK_0				: return Input::Keys::N0;
+		case SDLK_1				: return Input::Keys::N1;
+		case SDLK_2				: return Input::Keys::N2;
+		case SDLK_3				: return Input::Keys::N3;
+		case SDLK_4				: return Input::Keys::N4;
+		case SDLK_5				: return Input::Keys::N5;
+		case SDLK_6				: return Input::Keys::N6;
+		case SDLK_7				: return Input::Keys::N7;
+		case SDLK_8				: return Input::Keys::N8;
+		case SDLK_9				: return Input::Keys::N9;
 		case SDLK_a				: return Input::Keys::A;
 		case SDLK_b				: return Input::Keys::B;
 		case SDLK_c				: return Input::Keys::C;
@@ -631,24 +760,42 @@ Input::Keys::InputKey SdlKey2InputKey(SDLKey sdlkey) {
 		case SDLK_x				: return Input::Keys::X;
 		case SDLK_y				: return Input::Keys::Y;
 		case SDLK_z				: return Input::Keys::Z;
-		case SDLK_KP2			: return Input::Keys::DOWN; //DOWN
-		case SDLK_KP3			: return Input::Keys::LCTRL; //次見出し
-		case SDLK_KP4			: return Input::Keys::LEFT; //LEFT
-		case SDLK_KP6			: return Input::Keys::RIGHT; //RIGHT
-		case SDLK_KP7			: return Input::Keys::N9; //辞書メニュー
-		case SDLK_KP8			: return Input::Keys::UP; //UP
-		case SDLK_KP9			: return Input::Keys::LSHIFT; //前見出
-		case SDLK_F1			: return Input::Keys::N1; //一括検索
-		case SDLK_F2			: return Input::Keys::N2; //広辞苑
-		case SDLK_F3			: return Input::Keys::N3; //英和・和英
-		case SDLK_F4			: return Input::Keys::N4; //古語
-		case SDLK_F5			: return Input::Keys::N5; //ブリタニカ
-		case SDLK_F6			: return Input::Keys::N6; //切替
-		case SDLK_F7			: return Input::Keys::N7; //しおり
-		case SDLK_F10			: return Input::Keys::N8; //Home
-		case SDLK_CAPSLOCK		: return Input::Keys::N9; //機能　不使用
+		case SDLK_LSUPER		: return Input::Keys::LOS;
+		case SDLK_RSUPER		: return Input::Keys::ROS;
+		case SDLK_MENU			: return Input::Keys::MENU;
+		case SDLK_KP0			: return Input::Keys::KP0;
+		case SDLK_KP1			: return Input::Keys::KP1;
+		case SDLK_KP2			: return Input::Keys::KP2;
+		case SDLK_KP3			: return Input::Keys::KP3;
+		case SDLK_KP4			: return Input::Keys::KP4;
+		case SDLK_KP5			: return Input::Keys::KP5;
+		case SDLK_KP6			: return Input::Keys::KP6;
+		case SDLK_KP7			: return Input::Keys::KP7;
+		case SDLK_KP8			: return Input::Keys::KP8;
+		case SDLK_KP9			: return Input::Keys::KP9;
+		case SDLK_KP_MULTIPLY	: return Input::Keys::MULTIPLY;
+		case SDLK_KP_PLUS		: return Input::Keys::ADD;
+		case SDLK_KP_ENTER		: return Input::Keys::RETURN;
+		case SDLK_KP_MINUS		: return Input::Keys::SUBTRACT;
+		case SDLK_KP_PERIOD		: return Input::Keys::PERIOD;
+		case SDLK_KP_DIVIDE		: return Input::Keys::DIVIDE;
+		case SDLK_F1			: return Input::Keys::F1;
+		case SDLK_F2			: return Input::Keys::F2;
+		case SDLK_F3			: return Input::Keys::F3;
+		case SDLK_F4			: return Input::Keys::F4;
+		case SDLK_F5			: return Input::Keys::F5;
+		case SDLK_F6			: return Input::Keys::F6;
+		case SDLK_F7			: return Input::Keys::F7;
+		case SDLK_F8			: return Input::Keys::F8;
+		case SDLK_F9			: return Input::Keys::F9;
+		case SDLK_F10			: return Input::Keys::F10;
+		case SDLK_F11			: return Input::Keys::F11;
+		case SDLK_F12			: return Input::Keys::F12;
+		case SDLK_CAPSLOCK		: return Input::Keys::CAPS_LOCK;
+		case SDLK_NUMLOCK		: return Input::Keys::NUM_LOCK;
+		case SDLK_SCROLLOCK		: return Input::Keys::SCROLL_LOCK;
 
-		default					: return Input::Keys::SPACE;
+		default					: return Input::Keys::NONE;
 	}
 }
 #endif

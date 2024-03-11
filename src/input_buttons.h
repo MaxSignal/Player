@@ -19,6 +19,7 @@
 #define EP_INPUT_BUTTONS_H
 
 // Headers
+#include <unordered_map>
 #include <vector>
 
 /**
@@ -71,6 +72,9 @@ namespace Input {
 	 */
 	void InitButtons();
 
+	void LoadButtonMapping(FILE* file); 
+	void InitButtonsFromConfig(const std::string& configFile);
+
 	/** Buttons list of equivalent keys. */
 	extern std::vector<std::vector<int> > buttons;
 
@@ -94,6 +98,7 @@ namespace Input {
 				return false;
 		}
 	}
+	extern std::unordered_map<std::string, InputButton> buttonMap;
 }
 
 #endif

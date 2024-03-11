@@ -4578,7 +4578,7 @@ if test $ac_test_CXXFLAGS; then
   CXXFLAGS=$ac_save_CXXFLAGS
 elif test $ac_cv_prog_cxx_g = yes; then
   if test "$GXX" = yes; then
-    CXXFLAGS="-g -O2"
+    CXXFLAGS="-O2"
   else
     CXXFLAGS="-g"
   fi
@@ -5593,7 +5593,7 @@ if test $ac_test_CFLAGS; then
   CFLAGS=$ac_save_CFLAGS
 elif test $ac_cv_prog_cc_g = yes; then
   if test "$GCC" = yes; then
-    CFLAGS="-g -O2"
+    CFLAGS="-O2"
   else
     CFLAGS="-g"
   fi
@@ -6609,7 +6609,7 @@ if test $ac_test_OBJCXXFLAGS; then
   OBJCXXFLAGS=$ac_save_OBJCXXFLAGS
 elif test $ac_cv_prog_objcxx_g = yes; then
   if test "$GOBJCXX" = yes; then
-    OBJCXXFLAGS="-g -O2"
+    OBJCXXFLAGS="-O2"
   else
     OBJCXXFLAGS="-g"
   fi
@@ -8025,12 +8025,12 @@ if test -n "$OGGVORBIS_CFLAGS"; then
     pkg_cv_OGGVORBIS_CFLAGS="$OGGVORBIS_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"vorbisfile\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "vorbisfile") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"vorbisidec\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "vorbisidec") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_OGGVORBIS_CFLAGS=`$PKG_CONFIG --cflags "vorbisfile" 2>/dev/null`
+  pkg_cv_OGGVORBIS_CFLAGS=`$PKG_CONFIG --cflags "vorbisidec" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -8042,12 +8042,12 @@ if test -n "$OGGVORBIS_LIBS"; then
     pkg_cv_OGGVORBIS_LIBS="$OGGVORBIS_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"vorbisfile\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "vorbisfile") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"vorbisidec\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "vorbisidec") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_OGGVORBIS_LIBS=`$PKG_CONFIG --libs "vorbisfile" 2>/dev/null`
+  pkg_cv_OGGVORBIS_LIBS=`$PKG_CONFIG --libs "vorbisidec" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -8068,9 +8068,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        OGGVORBIS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "vorbisfile" 2>&1`
+	        OGGVORBIS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "vorbisidec" 2>&1`
         else
-	        OGGVORBIS_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "vorbisfile" 2>&1`
+	        OGGVORBIS_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "vorbisidec" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$OGGVORBIS_PKG_ERRORS" >&5

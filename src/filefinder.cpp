@@ -579,7 +579,7 @@ void FileFinder::InitRtpPaths(bool no_rtp, bool no_rtp_warnings) {
 	env->DeleteLocalRef(cls);
 	add_rtp_path(cs + "/" + version_str);
 #elif defined(UNDER_CE)
-	add_rtp_path("\\Storage Card\\easyrpg\\data\\rtp\\" + version_str);
+	add_rtp_path(std::string(get_wceh_cwd())+ "\\rtp\\" + version_str);
 #elif (defined(USE_WINE_REGISTRY) || defined(_WIN32)) && !defined(UNDER_CE)
 	std::string const product = "RPG" + version_str;
 	if (Player::IsRPG2k()) {

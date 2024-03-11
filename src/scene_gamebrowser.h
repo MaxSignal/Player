@@ -24,7 +24,9 @@
 #include "window_command.h"
 #include "window_help.h"
 #include "window_gamelist.h"
-
+#include "window_settings.h"
+#include "baseui.h"
+#include "game_clock.h"
 /**
  * Game browser class.
  */
@@ -54,6 +56,10 @@ public:
 	 */
 	void UpdateGameListSelection();
 
+	void UpdateSettings();
+
+	void KeyAdd();
+	
 	/**
 	 * Starts the selected game.
 	 */
@@ -63,6 +69,7 @@ public:
 	enum CommandOptionType {
 		GameList = 0,
 		About,
+		Settings,
 		Quit
 	};
 
@@ -82,12 +89,18 @@ private:
 	/** Window dislaying about text */
 	std::unique_ptr<Window_About> about_window;
 
+	std::unique_ptr<Window_Settings> settings_window;
+
+	std::unique_ptr<Window_Help> key_window;
+
 	bool game_loading = false;
 
 	int old_gamelist_index = 0;
 
 	/** What the state of the Player::debug_flag was at launch time */
 	bool initial_debug_flag = false;
+
+	int input_mode = -1;
 };
 
 #endif

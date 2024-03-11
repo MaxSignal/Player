@@ -25,6 +25,9 @@
 #include "scene_title.h"
 #include "bitmap.h"
 #include "audio.h"
+#include "keys.h"
+#include "input_buttons.h"
+#include "wincehelper.h"
 
 #ifdef _WIN32
 	#include <Windows.h>
@@ -75,12 +78,16 @@ void Scene_GameBrowser::Update() {
 
 	command_window->Update();
 	gamelist_window->Update();
+	settings_window->Update();
 
 	if (command_window->GetActive()) {
 		UpdateCommand();
 	}
 	else if (gamelist_window->GetActive()) {
 		UpdateGameListSelection();
+	}
+	else if (settings_window->GetActive()) {
+		UpdateSettings();
 	}
 }
 
@@ -90,6 +97,7 @@ void Scene_GameBrowser::CreateWindows() {
 
 	options.push_back("Games");
 	options.push_back("About");
+	options.push_back("Setting");	
 	options.push_back("Exit");
 
 	command_window.reset(new Window_Command(options, 60));
@@ -113,6 +121,14 @@ void Scene_GameBrowser::CreateWindows() {
 	about_window.reset(new Window_About(60, 32, SCREEN_TARGET_WIDTH - 60, SCREEN_TARGET_HEIGHT - 32));
 	about_window->Refresh();
 	about_window->SetVisible(false);
+
+	settings_window.reset(new Window_Settings(60, 32, SCREEN_TARGET_WIDTH - 60, SCREEN_TARGET_HEIGHT - 32));
+	settings_window->Refresh();
+	settings_window->SetVisible(false);
+
+	key_window.reset(new Window_Help(SCREEN_TARGET_WIDTH / 4, SCREEN_TARGET_HEIGHT / 2 - 16, SCREEN_TARGET_WIDTH / 2, 32));
+	key_window->SetText("press a key to bind");
+	key_window->SetVisible(false);
 }
 
 void Scene_GameBrowser::UpdateCommand() {
@@ -122,10 +138,17 @@ void Scene_GameBrowser::UpdateCommand() {
 		case GameList:
 			gamelist_window->SetVisible(true);
 			about_window->SetVisible(false);
+			settings_window->SetVisible(false);
 			break;
 		case About:
 			gamelist_window->SetVisible(false);
 			about_window->SetVisible(true);
+			settings_window->SetVisible(false);
+			break;
+		case Settings:
+			gamelist_window->SetVisible(false);
+			about_window->SetVisible(false);
+			settings_window->SetVisible(true);
 			break;
 		default:
 			break;
@@ -141,12 +164,20 @@ void Scene_GameBrowser::UpdateCommand() {
 				if (!gamelist_window->HasValidGames()) {
 					return;
 				}
+				settings_window->SetActive(false);
 				command_window->SetActive(false);
 				command_window->SetIndex(-1);
 				gamelist_window->SetActive(true);
 				gamelist_window->SetIndex(old_gamelist_index);
 				break;
 			case About:
+				break;
+			case Settings:
+				command_window->SetActive(false);
+				command_window->SetIndex(-1);
+				gamelist_window->SetActive(false);
+				settings_window->SetActive(true);
+				settings_window->SetIndex(0);
 				break;
 			default:
 				Scene::Pop();
@@ -168,6 +199,86 @@ void Scene_GameBrowser::UpdateGameListSelection() {
 		Player::debug_flag = true;
 		load_window->SetVisible(true);
 		game_loading = true;
+	}
+}
+
+void Scene_GameBrowser::UpdateSettings() {
+
+	if (input_mode == 1) {
+		KeyAdd();
+	} else if (Input::IsTriggered(Input::CANCEL)) {
+		command_window->SetActive(true);
+		command_window->SetIndex(2);
+		settings_window->SetActive(false);
+		settings_window->SetIndex(-1);
+		input_mode = -1;
+	} else if (Input::IsReleased(Input::DECISION)) {
+		if (input_mode == -1) {
+			input_mode = 0;
+			return;
+		}
+		key_window->SetVisible(true);
+		input_mode = 1;
+		Game_Clock::SleepFor(std::chrono::milliseconds(100));
+	}
+}
+
+void Scene_GameBrowser::KeyAdd() {
+	BaseUi::KeyStatus& keys = DisplayUi->GetKeyStates();
+
+	for (size_t i = 0; i < Input::Keys::KEYS_COUNT; ++i) {
+
+		// Check if the key is pressed
+		if (keys[i]) {
+
+			int idx = settings_window->GetIndex();
+			if (Input::IsTriggered(Input::SCROLL_DOWN) || Input::IsTriggered(Input::DOWN)) {
+				idx -= 1;
+			} else if (Input::IsTriggered(Input::SCROLL_UP) || Input::IsTriggered(Input::UP)){
+				idx += 1;
+			} 
+			if (Input::IsPressed(Input::DECISION)) {
+				input_mode = -1;
+			} else {
+				input_mode = 0;
+			}
+			std::string configFile = std::string(get_wceh_cwd())+"\\config.txt";
+    		FILE* file = FileFinder::fopenUTF8(configFile.c_str(), "r");
+			std::vector<std::string> lines;
+
+			if (file != NULL) {
+				char buffer[256];
+				while (fgets(buffer, sizeof(buffer), file) != NULL) { 
+					lines.emplace_back(buffer);
+				}
+			}
+			fclose(file);
+
+			auto it = Input::reverseKeyMap.find(static_cast<Input::Keys::InputKey>(i));
+			std::string keyName = it->second;
+
+			size_t pos = lines[idx].rfind(' ');
+			lines[idx] = lines[idx].substr(0, pos) +  " " + keyName + "\n";
+
+			file = FileFinder::fopenUTF8(configFile.c_str(), "w");
+
+			for (const auto& str : lines) {
+				fputs(str.c_str(), file);
+			}
+			fclose(file);
+
+			file = FileFinder::fopenUTF8(configFile.c_str(), "r");
+			Input::LoadButtonMapping(file);
+			fclose(file);
+
+			// Output the pressed key
+			// Output::Warning("Key %zu is pressed.\n", i);
+			settings_window->Refresh();
+
+			settings_window->SetIndex(idx);
+			key_window->SetVisible(false);
+			break;
+		}
 	}
 }
 
