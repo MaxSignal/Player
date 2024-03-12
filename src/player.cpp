@@ -28,6 +28,8 @@
 #include <iomanip>
 #include <fstream>
 #include <thread>
+#include <cstdio>
+
 
 #ifdef _WIN32
 #  include "platform/windows/utils.h"
@@ -85,6 +87,7 @@
 #include "scope_guard.h"
 #include "baseui.h"
 #include "game_clock.h"
+#include "wincehelper.h"
 
 #ifndef EMSCRIPTEN
 // This is not used on Emscripten.
@@ -727,8 +730,13 @@ void Player::CreateGameObjects() {
 
 	bool no_rtp_warning_flag = false;
 	std::string ini_file = FileFinder::FindDefault(INI_NAME);
-
+#ifdef UNDER_CE
+	std::wstring wini = stringtowidestring(ini_file);
+	std::ifstream is(wini.c_str(), std::ios::binary);
+	INIReader ini(is);
+#else
 	INIReader ini(ini_file);
+#endif
 	if (ini.ParseError() != -1) {
 		std::string title = ini.GetString("RPG_RT", "GameTitle", "");
 		game_title = ReaderUtil::Recode(title, encoding);
@@ -896,23 +904,50 @@ void Player::LoadDatabase() {
 	bool easyrpg_project = !edb.empty() && !emt.empty();
 
 	if (easyrpg_project) {
+#ifdef UNDER_CE
+		std::wstring wedb = stringtowidestring(edb);
+		std::wstring wemt = stringtowidestring(emt);
+		std::ifstream isedb(wedb.c_str(), std::ios::binary);
+		std::ifstream isemt(wemt.c_str(), std::ios::binary);
+
+		if (!LDB_Reader::LoadXml(isedb)) {
+			Output::ErrorStr(LcfReader::GetError());
+		}		
+		if (!LMT_Reader::LoadXml(isemt)) {
+			Output::ErrorStr(LcfReader::GetError());
+		}	
+#else
 		if (!LDB_Reader::LoadXml(edb)) {
 			Output::ErrorStr(LcfReader::GetError());
 		}
 		if (!LMT_Reader::LoadXml(emt)) {
 			Output::ErrorStr(LcfReader::GetError());
-		}
+		}	
+#endif
 	}
 	else {
 		std::string ldb = FileFinder::FindDefault(DATABASE_NAME);
 		std::string lmt = FileFinder::FindDefault(TREEMAP_NAME);
+#ifdef UNDER_CE
+		std::wstring wldb = stringtowidestring(ldb);
+		std::wstring wlmt = stringtowidestring(lmt);
+		std::ifstream isldb(wldb.c_str(), std::ios::binary);
+		std::ifstream islmt(wlmt.c_str(), std::ios::binary);
 
+		if (!LDB_Reader::Load(isldb, encoding)) {
+			Output::ErrorStr(LcfReader::GetError());
+		}
+		if (!LMT_Reader::Load(islmt, encoding)) {
+			Output::ErrorStr(LcfReader::GetError());
+		}
+#else
 		if (!LDB_Reader::Load(ldb, encoding)) {
 			Output::ErrorStr(LcfReader::GetError());
 		}
 		if (!LMT_Reader::Load(lmt, encoding)) {
 			Output::ErrorStr(LcfReader::GetError());
 		}
+#endif
 	}
 }
 
@@ -955,8 +990,13 @@ void Player::LoadSavegame(const std::string& save_name) {
 	if (title_scene) {
 		static_cast<Scene_Title*>(title_scene.get())->OnGameStart();
 	}
-
+#ifdef UNDER_CE
+	std::wstring wsave_name = stringtowidestring(save_name);
+	std::ifstream is(wsave_name.c_str(), std::ios::binary);
+	std::unique_ptr<RPG::Save> save = LSD_Reader::Load(is, encoding);
+#else
 	std::unique_ptr<RPG::Save> save = LSD_Reader::Load(save_name, encoding);
+#endif
 
 	if (!save.get()) {
 		Output::Error("%s", LcfReader::GetError().c_str());
@@ -1069,7 +1109,13 @@ std::string Player::GetEncoding() {
 		std::string ldb = FileFinder::FindDefault(DATABASE_NAME);
 
 		std::vector<std::string> encodings;
+		
+#ifdef UNDER_CE
+		std::wstring wldb = stringtowidestring(ldb);
+		std::ifstream is(wldb.c_str(), std::ios::binary);
+#else
 		std::ifstream is(ldb, std::ios::binary);
+#endif
 		// Stream required due to a liblcf api change:
 		// When a string is passed the encoding of the string is detected
 		if (is) {

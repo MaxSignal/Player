@@ -25,6 +25,7 @@
 #include "player.h"
 #include "scene_file.h"
 #include "scene_import.h"
+#include "wincehelper.h"
 
 Scene_Import::Scene_Import() :
 	Scene_File(Player::meta->GetExVocabImportSaveHelpText()) {
@@ -36,8 +37,14 @@ void Scene_Import::PopulateSaveWindow(Window_SaveFile& win, int id) {
 	if (id < static_cast<int>(files.size())) {
 		win.SetDisplayOverride(files[id].short_path, files[id].file_id);
 
-		std::unique_ptr<RPG::Save> savegame =
-			LSD_Reader::Load(files[id].full_path, Player::encoding);
+#ifdef UNDER_CE
+			std::wstring wstr = stringtowidestring(files[id].full_path);
+			std::ifstream is(wstr.c_str(), std::ios::binary);
+
+			std::unique_ptr<RPG::Save> savegame = LSD_Reader::Load(is, Player::encoding);
+#else
+			std::unique_ptr<RPG::Save> savegame = LSD_Reader::Load(files[id].full_path, Player::encoding);
+#endif
 
 		if (savegame.get()) {
 			PopulatePartyFaces(win, id, *savegame);

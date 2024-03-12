@@ -30,6 +30,7 @@
 #include "scene_file.h"
 #include "bitmap.h"
 #include "reader_util.h"
+#include "wincehelper.h"
 
 Scene_File::Scene_File(std::string message) :
 	message(message) {
@@ -73,9 +74,14 @@ void Scene_File::PopulateSaveWindow(Window_SaveFile& win, int id) {
 
 	if (!file.empty()) {
 		// File found
-		std::unique_ptr<RPG::Save> savegame =
-			LSD_Reader::Load(file, Player::encoding);
+#ifdef UNDER_CE
+			std::wstring wfile = stringtowidestring(file);
+			std::ifstream is(wfile.c_str(), std::ios::binary);
 
+			std::unique_ptr<RPG::Save> savegame = LSD_Reader::Load(is, Player::encoding);
+#else
+			std::unique_ptr<RPG::Save> savegame = LSD_Reader::Load(file, Player::encoding);
+#endif
 		if (savegame.get()) {
 			PopulatePartyFaces(win, id, *savegame);
 			UpdateLatestTimestamp(id, *savegame);

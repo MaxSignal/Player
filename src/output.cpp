@@ -56,6 +56,7 @@
 #include "utils.h"
 #include "font.h"
 #include "baseui.h"
+#include "wincehelper.h"
 
 using namespace std::chrono_literals;
 
@@ -65,7 +66,12 @@ namespace {
 
 	std::ostream& output_time() {
 		if (!init) {
+#ifdef UNDER_CE
+			std::wstring path = stringtowidestring(FileFinder::MakePath(Main_Data::GetSavePath(), OUTPUT_FILENAME));
+			LOG_FILE.open(path.c_str(), std::ios_base::out | std::ios_base::app);
+#else
 			LOG_FILE.open(FileFinder::MakePath(Main_Data::GetSavePath(), OUTPUT_FILENAME).c_str(), std::ios_base::out | std::ios_base::app);
+#endif
 			init = true;
 		}
 		std::time_t t = std::time(NULL);
@@ -220,7 +226,12 @@ void Output::Quit() {
 	char* buf = new char[log_size];
 
 	std::ifstream in;
+#ifdef UNDER_CE
+	std::wstring path = stringtowidestring(FileFinder::MakePath(Main_Data::GetSavePath(), OUTPUT_FILENAME));
+	in.open(path.c_str());
+#else
 	in.open(FileFinder::MakePath(Main_Data::GetSavePath(), OUTPUT_FILENAME).c_str());
+#endif
 	if (!in.bad()) {
 		in.seekg(0, std::ios_base::end);
 		if (in.tellg() > log_size) {
@@ -232,7 +243,11 @@ void Output::Quit() {
 			in.close();
 
 			std::ofstream out;
+#ifdef UNDER_CE
+			out.open(path.c_str());
+#else
 			out.open(FileFinder::MakePath(Main_Data::GetSavePath(), OUTPUT_FILENAME).c_str());
+#endif
 			out.write(buf, read);
 			out.close();
 		}

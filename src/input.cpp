@@ -22,6 +22,7 @@
 #include "player.h"
 #include "system.h"
 #include "baseui.h"
+#include "wincehelper.h"
 
 #include <algorithm>
 #include <array>
@@ -53,7 +54,11 @@ void Input::WaitInput(bool v) { wait_input = v; }
 
 static bool InitRecording(const std::string& record_to_path) {
 	if (!record_to_path.empty()) {
+#ifdef UNDER_CE
+		auto path = stringtowidestring(record_to_path).c_str();
+#else
 		auto path = record_to_path.c_str();
+#endif
 
 		record_log.open(path, std::ios::out|std::ios::trunc);
 

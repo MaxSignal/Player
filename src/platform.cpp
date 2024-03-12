@@ -20,6 +20,7 @@
 #include "utils.h"
 #include <cassert>
 #include <utility>
+#include "output.h"
 
 #ifdef UNDER_CE
 #include "wincehelper.h"
@@ -44,7 +45,7 @@
 #endif
 
 Platform::File::File(std::string name) :
-#if defined(_WIN32) && !defined(UNDER_CE)
+#if defined(_WIN32)// && !defined(UNDER_CE)
 		filename(Utils::ToWideString(name))
 #else
 		filename(std::move(name))
@@ -54,7 +55,7 @@ Platform::File::File(std::string name) :
 }
 
 bool Platform::File::Exists() const {
-#if defined(_WIN32) && !defined(UNDER_CE)
+#if defined(_WIN32)// && !defined(UNDER_CE)
 	return ::GetFileAttributesW(filename.c_str()) != (DWORD)-1;
 #elif (defined(GEKKO) || defined(_3DS) || defined(__SWITCH__))
 	struct stat sb;
@@ -76,7 +77,7 @@ bool Platform::File::IsDirectory(bool follow_symlinks) const {
 }
 
 Platform::FileType Platform::File::GetType(bool follow_symlinks) const {
-#if defined(_WIN32) && !defined(UNDER_CE)
+#if defined(_WIN32)
 	(void)follow_symlinks;
 	int attribs = ::GetFileAttributesW(filename.c_str());
 
@@ -99,7 +100,7 @@ Platform::FileType Platform::File::GetType(bool follow_symlinks) const {
 	return FileType::Unknown;
 #else
 	struct stat sb = {};
-#  if (defined(GEKKO) || defined(_3DS) || defined(__SWITCH__) || defined(UNDER_CE))
+#  if (defined(GEKKO) || defined(_3DS) || defined(__SWITCH__)
 	(void)follow_symlinks;
 	auto fn = ::stat;
 #  else
@@ -115,7 +116,7 @@ Platform::FileType Platform::File::GetType(bool follow_symlinks) const {
 }
 
 int64_t Platform::File::GetSize() const {
-#if defined(_WIN32) && !defined(UNDER_CE)
+#if defined(_WIN32)
 	WIN32_FILE_ATTRIBUTE_DATA data;
 	BOOL res = ::GetFileAttributesExW(filename.c_str(),
 			GetFileExInfoStandard,
@@ -138,12 +139,11 @@ int64_t Platform::File::GetSize() const {
 
 Platform::Directory::Directory(const std::string& name) {
 #if defined(UNDER_CE)
-	printf("opendir(compat): %s\n", name.c_str());
+	//printf("opendir(compat): %s\n", name.c_str());
 	dir_handle = FindFirstFile(Utils::ToWideString(name + "\\*").c_str(), &entry);
 	LOAD_FIRSTFILE = 1;
 	LOAD_FIRSTFILE_DATA = entry;
-#elif defined(_WIN32)
-//#if defined(_WIN32) && !defined(UNDER_CE)
+#elif defined(_WIN32) // && !defined(UNDER_CE)
 	dir_handle = ::_wopendir(Utils::ToWideString(name).c_str());
 #elif defined(PSP2)
 	dir_handle = ::sceIoDopen(name.c_str());
@@ -173,7 +173,7 @@ bool Platform::Directory::Read() {
 		LOAD_FIRSTFILE = 0;
 	}
 
-#	elif defined(_WIN32) && !defined(UNDER_CE)
+#	elif defined(_WIN32)// && !defined(UNDER_CE)
 	entry = ::_wreaddir(dir_handle);
 #	else
 	entry = ::readdir(dir_handle);
@@ -239,7 +239,7 @@ void Platform::Directory::Close() {
 		FindClose(dir_handle);
 		dir_handle = nullptr;
 		LOAD_FIRSTFILE = 0;
-#elif defined(_WIN32) && !defined(UNDER_CE)
+#elif defined(_WIN32)// && !defined(UNDER_CE)
 		::_wclosedir(dir_handle);
 		dir_handle = nullptr;
 #elif defined(PSP2)

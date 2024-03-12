@@ -48,6 +48,7 @@
 #include "utils.h"
 #include "scope_guard.h"
 #include "scene_gameover.h"
+#include "wincehelper.h"
 
 namespace {
 	constexpr int default_pan_x = 9 * SCREEN_TILE_SIZE;
@@ -284,9 +285,21 @@ void Game_Map::SetupCommon(int _id, bool is_load_savegame) {
 			Output::Error("Loading of Map %s failed.\nThe map was not found.", ss.str().c_str());
 		}
 
+#ifdef UNDER_CE
+		std::wstring wmap_file = stringtowidestring(map_file);
+		std::ifstream iswmap(wmap_file.c_str(), std::ios::binary);
+		map = LMU_Reader::Load(iswmap, Player::encoding);
+#else
 		map = LMU_Reader::Load(map_file, Player::encoding);
+#endif
 	} else {
+#ifdef UNDER_CE
+		std::wstring wmap_file = stringtowidestring(map_file);
+		std::ifstream iswmap(wmap_file.c_str(), std::ios::binary);
+		map = LMU_Reader::LoadXml(iswmap);
+#else
 		map = LMU_Reader::LoadXml(map_file);
+#endif
 	}
 
 	Output::Debug("Loading Map %s", ss.str().c_str());

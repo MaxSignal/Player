@@ -19,6 +19,7 @@ char *wceh_getcwd(char *buffer, int maxlen);
 int wceh_CHDIR(const char *dirname);
 FILE *wceh_fopen(const char *filename, const char *mode);
 char *get_wceh_cwd();
+std::wstring stringtowidestring(std::string str);
 #endif
 
 /* These functions and namespaces are part of GCC.

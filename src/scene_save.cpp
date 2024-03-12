@@ -17,6 +17,7 @@
 
 // Headers
 #include <sstream>
+#include <fstream>
 
 #ifdef EMSCRIPTEN
 #  include <emscripten.h>
@@ -41,6 +42,7 @@
 #include "scene_file.h"
 #include "reader_util.h"
 #include "version.h"
+#include "wincehelper.h"
 
 Scene_Save::Scene_Save() :
 	Scene_File(Data::terms.save_game_message) {
@@ -133,7 +135,14 @@ void Scene_Save::Action(int index) {
 			sme.map_id = 0;
 		}
 	}
+#ifdef UNDER_CE
+	std::wstring wfilename = stringtowidestring(filename);
+	std::ofstream stream(wfilename.c_str(), std::ios::binary);
+
+	LSD_Reader::Save(stream, data_copy, Player::encoding);
+#else
 	LSD_Reader::Save(filename, data_copy, Player::encoding);
+#endif
 
 #ifdef EMSCRIPTEN
 	// Save changed file system

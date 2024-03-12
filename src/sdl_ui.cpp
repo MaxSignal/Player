@@ -161,7 +161,7 @@ bool SdlUi::RequestVideoMode(int width, int height, bool fullscreen) {
 	current_display_mode.height = height;
 	current_display_mode.width = width;
 
-#if defined(OPENDINGUX) || defined(UNDER_CE)
+#if defined(OPENDINGUX)
 	// Only one video mode for opendingux (320x240)
 	// SDL_ListModes is broken, we must return here
 	return true;
@@ -300,7 +300,7 @@ void SdlUi::EndDisplayModeChange() {
 }
 
 bool SdlUi::RefreshDisplayMode() {
-	uint32_t flags = SDL_HWSURFACE | SDL_FULLSCREEN;
+	uint32_t flags = current_display_mode.flags;
 	int display_width = current_display_mode.width;
 	int display_height = current_display_mode.height;
 
@@ -414,7 +414,7 @@ bool SdlUi::ShowCursor(bool flag) {
 void SdlUi::Blit2X(Bitmap const& src, SDL_Surface* dst_surf) {
 	if (SDL_MUSTLOCK(dst_surf)) SDL_LockSurface(dst_surf);
 
-#if defined(__MORPHOS__) || defined(__amigaos4__)
+#if defined(__MORPHOS__) || defined(__amigaos4__) || defined(UNDER_CE)
 	// Quick & dirty big endian 2x zoom blitter
 	int blit_height = src.height() * 2;
 	int blit_width = src.width();

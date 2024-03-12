@@ -678,7 +678,7 @@ std::shared_ptr<std::fstream> FileFinder::openUTF8(const std::string& name,
 													  std::ios_base::openmode m)
 {
 	std::shared_ptr<std::fstream> ret(new std::fstream(
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(UNDER_CE)
 		Utils::ToWideString(name).c_str(),
 #else
 		name.c_str(),

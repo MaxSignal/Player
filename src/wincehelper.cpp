@@ -31,7 +31,7 @@ char *wceh_getcwd(char *buffer, int maxlen) {
 			exit(1);
 		}
 		char buf_char[MAX_PATH + 1] = "";
-		WideCharToMultiByte(CP_ACP, 0, buf, -1, buf_char, sizeof(buf_char), NULL, NULL);
+		WideCharToMultiByte(CP_UTF8, 0, buf, -1, buf_char, sizeof(buf_char), NULL, NULL);
 		char* dir_backslash;
 		dir_backslash = strrchr(buf_char, '\\');
 		strncpy(wceh_cwd, buf_char, dir_backslash - buf_char + 1);
@@ -117,6 +117,14 @@ FILE *wceh_fopen(const char *filename, const char *mode) {
 		//exit(1);
 	}
 	return ret;
+}
+
+std::wstring stringtowidestring(std::string str) {
+  wchar_t *wstring;
+  utf8towchar(str.c_str(), &wstring);
+  std::wstring result(wstring);
+  free(wstring); // 必要に応じてバッファを解放
+  return result;
 }
 
 /* These functions and namespaces are part of GCC.

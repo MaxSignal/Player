@@ -95,10 +95,10 @@ namespace Platform {
 		int64_t GetSize() const;
 
 	private:
-#if defined(_WIN32) && !defined(UNDER_CE)
+#if defined(_WIN32) //&& !defined(UNDER_CE)
 		const std::wstring filename;
-#else
-		const std::string filename;
+// #else
+// 		const std::string filename;
 #endif
 	};
 

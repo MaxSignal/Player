@@ -31,6 +31,7 @@
 #include "output.h"
 #include "player.h"
 #include "reader_util.h"
+#include "wincehelper.h"
 
 
 // Constants used for identifying fields in the easyrpg.ini file.
@@ -50,7 +51,8 @@
 // Helper: Get the CRC32 of a given file as a hex string
 std::string crc32file(std::string file_name) {
 	if (!file_name.empty()) {
-		std::ifstream in(file_name.c_str(), std::ios::binary);
+		std::wstring wfile_name = stringtowidestring(file_name);
+		std::ifstream in(wfile_name.c_str(), std::ios::binary);
 		if (in.is_open()) {
 			std::string buffer((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 			unsigned long crc = ::crc32(0, reinterpret_cast<const unsigned char*>(buffer.c_str()), buffer.length());
@@ -153,7 +155,14 @@ std::vector<Meta::FileItem> Meta::BuildImportCandidateList(const FileFinder::Dir
 			// Note that corruptness is checked later (in window_savefile.cpp)
 			std::string file = FileFinder::FindDefault(*child_tree, ss.str());
 			if (!file.empty()) {
+#ifdef UNDER_CE
+				std::wstring wfile = stringtowidestring(file);
+				std::ifstream is(wfile.c_str(), std::ios::binary);
+
+				std::unique_ptr<RPG::Save> savegame = LSD_Reader::Load(is, Player::encoding);
+#else
 				std::unique_ptr<RPG::Save> savegame = LSD_Reader::Load(file, Player::encoding);
+#endif
 				if (savegame != nullptr) {
 					if (savegame->party_location.map_id == pivot_map_id || pivot_map_id==0) {
 						FileItem item;
