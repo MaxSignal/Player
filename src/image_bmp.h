@@ -19,6 +19,9 @@
 #define EP_IMAGE_BMP_H
 
 #include <cstdio>
+#ifdef PS2
+	#include <cstdint>
+#endif
 
 namespace ImageBMP {
 	bool ReadBMP(const uint8_t* data, unsigned len, bool transparent, int& width, int& height, void*& pixels);

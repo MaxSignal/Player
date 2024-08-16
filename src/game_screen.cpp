@@ -29,6 +29,10 @@
 #include "utils.h"
 #include <cmath>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 static constexpr int kShakeContinuousTimeStart = 65535;
 
 Game_Screen::Game_Screen() :

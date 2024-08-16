@@ -150,6 +150,7 @@ add_library(${PROJECT_NAME}
 	src/input_buttons.h
 	src/input_buttons_opendingux.cpp
 	src/input_buttons_psp.cpp
+	src/input_buttons_ps2.cpp
 	src/input.cpp
 	src/input.h
 	src/input_source.cpp
@@ -443,6 +444,10 @@ target_link_libraries(${PROJECT_NAME} PIXMAN::PIXMAN)
 # Always enable Wine registry support on non-Windows
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_WINE=1)
+endif()
+
+if(PS2)
+	target_link_libraries(${PROJECT_NAME} SDL2main modplug patches gskit dmakit ps2_drivers )
 endif()
 
 # freetype and harfbuzz

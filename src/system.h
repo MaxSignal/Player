@@ -86,6 +86,9 @@
 #  define SUPPORT_JOYSTICK
 #  define SUPPORT_JOYSTICK_HAT
 #  define SUPPORT_JOYSTICK_AXIS
+#elif defined(PS2)
+#  define SUPPORT_JOYSTICK
+#  define SUPPORT_JOYSTICK_AXIS
 #else // Everything not catched above, e.g. Linux/*BSD/macOS
 #  define USE_WINE_REGISTRY
 #  define SUPPORT_ZOOM

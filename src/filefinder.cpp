@@ -571,6 +571,9 @@ void FileFinder::InitRtpPaths(bool no_rtp, bool no_rtp_warnings) {
 	add_rtp_path("sdmc:/data/rtp/" + version_str + "/");
 #elif defined(PSP2)
 	add_rtp_path("ux0:/data/easyrpg-player/rtp/" + version_str + "/");
+#elif defined(PS2)
+	add_rtp_path("mass://rtp" + version_str + "/");
+	add_rtp_path("host0://rtp" + version_str + "/");
 #elif defined(USE_LIBRETRO)
 	const char* dir = nullptr;
 	if (LibretroUi::environ_cb(RETRO_ENVIRONMENT_GET_CORE_ASSETS_DIRECTORY, &dir) && dir) {

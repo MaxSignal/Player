@@ -79,6 +79,7 @@ double Hue_2_RGB(double v1, double v2, double vH) {
  * HSL to RGB.
  */
 Color HSL2RGB(ColorHSL col) {
+#ifndef PS2
 	Color ncol(0, 0, 0, 0);
 	if (col.s == 0) {
 		ncol.red = (unsigned char)(col.l * 255);
@@ -97,9 +98,11 @@ Color HSL2RGB(ColorHSL col) {
 		ncol.blue = (unsigned char)(255 * Hue_2_RGB(v1, v2, col.h - (1.0 / 3)));
 	}
 	return ncol;
+#endif
 }
 
 Color RGBAdjustHSL(Color col, double h, double s, double l) {
+#ifndef PS2
 	ColorHSL hsl;
 	Color rgb = col;
 	hsl = RGB2HSL(rgb);
@@ -115,4 +118,5 @@ Color RGBAdjustHSL(Color col, double h, double s, double l) {
 	rgb = HSL2RGB(hsl);
 	rgb.alpha = col.alpha;
 	return rgb;
+#endif
 }
