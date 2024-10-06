@@ -803,7 +803,7 @@ bool FileFinder::Exists(const std::string& filename) {
 }
 
 bool FileFinder::IsDirectory(const std::string& dir) {
-#if (defined(GEKKO) || defined(_3DS) || defined(__SWITCH__))
+#if (defined(GEKKO) || defined(_3DS) || defined(__SWITCH__) || defined(PS2)
 	struct stat sb;
 	if (::stat(dir.c_str(), &sb) == 0)
 		return S_ISDIR(sb.st_mode);
