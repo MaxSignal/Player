@@ -113,7 +113,7 @@ FileFinder_RTP::FileFinder_RTP(bool no_rtp, bool no_rtp_warnings, std::string rt
 	// Our RTP is for all engines
 	ReadRegistry("EasyRPG", "RTP", "path");
 #elif defined(_TINSPIRE)
-	AddPath("/easyrpg-player/rtp/" + version_str);
+	AddPath("/easyrpg-player/rtp/" + version_str + ".zip.tns");
 #else
 	// Fallback for unknown platforms
 	AddPath("/data/rtp/" + version_str);
