@@ -41,6 +41,9 @@ using Platform_Clock = EmscriptenClock;
 // Only use libretro clock on platforms with no custom clock
 #include "platform/libretro/clock.h"
 using Platform_Clock = LibretroClock;
+#elif defined(_TINSPIRE)
+#include "platform/nspire/clock.h"
+using Platform_Clock = NspireClock;
 #else
 #include "std_clock.h"
 using Platform_Clock = StdClock;

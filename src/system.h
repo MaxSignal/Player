@@ -91,6 +91,9 @@
 #  define SUPPORT_MOUSE
 #  define SUPPORT_JOYSTICK
 #  define SUPPORT_JOYSTICK_AXIS
+#elif defined(_TINSPIRE)
+#  define SUPPORT_MOUSE
+#  define SUPPORT_TOUCH
 #else // Everything not catched above, e.g. Linux/*BSD/macOS
 #  define USE_WINE_REGISTRY
 #  define USE_XDG_RTP

@@ -246,7 +246,7 @@ add_library(${PROJECT_NAME} OBJECT
 	src/instrumentation.h
 	src/json_helper.cpp
 	src/json_helper.h
-	src/keys.h
+	src/_keys.h
 	src/main_data.cpp
 	src/main_data.h
 	src/maniac_patch.cpp

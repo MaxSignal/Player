@@ -23,7 +23,7 @@
 #include "cache.h"
 #include "input_buttons.h"
 #include "input_source.h"
-#include "keys.h"
+#include "_keys.h"
 #include "main_data.h"
 #include "options.h"
 #include "player.h"

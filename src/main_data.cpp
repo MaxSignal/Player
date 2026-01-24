@@ -110,6 +110,8 @@ void Main_Data::Init() {
 			if (strcmp(current_dir, "/") == 0 || strcmp(current_dir, home) == 0) {
 				project_path = MacOSUtils::GetBundleDir();
 			}
+#elif defined(_TINSPIRE)
+			project_path = "easyrpg-player";
 #endif
 		}
 	}

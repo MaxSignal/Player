@@ -29,7 +29,7 @@
 
 #include <lcf/enum_tags.h>
 #include "flat_map.h"
-#include "keys.h"
+#include "_keys.h"
 
 struct Game_ConfigInput;
 

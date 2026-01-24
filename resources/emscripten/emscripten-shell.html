@@ -231,7 +231,7 @@ function bindKey(node, key) {
     event.preventDefault();
 
     const pressedKey = keysDown.get(event.target.id);
-    if (pressedKey && keys.has(pressedKey)) {
+    if (pressedKey && _keys.has(pressedKey)) {
       const key = keys.get(pressedKey);
       simulateKeyboardEvent('keyup', key);
     }
@@ -258,7 +258,7 @@ function bindKey(node, key) {
       document.getElementById(origTargetId).classList.remove('active');
     }
 
-    if (keys.has(nextTargetId)) {
+    if (_keys.has(nextTargetId)) {
       const key = keys.get(nextTargetId);
       simulateKeyboardEvent('keydown', key);
       keysDown.set(target.id, nextTargetId);

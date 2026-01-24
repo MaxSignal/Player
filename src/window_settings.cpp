@@ -25,7 +25,7 @@
 #include "game_config.h"
 #include "game_system.h"
 #include "input_buttons.h"
-#include "keys.h"
+#include "_keys.h"
 #include "output.h"
 #include "baseui.h"
 #include "bitmap.h"

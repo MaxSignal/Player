@@ -287,7 +287,12 @@ bool FileFinder::IsSupportedArchiveExtension(std::string path) {
 	}
 #endif
 
+#ifdef _TINSPIRE
+	return EndsWith(pv, ".zip.tns") || EndsWith(pv, ".easyrpg.tns");
+#else
 	return EndsWith(pv, ".zip") || EndsWith(pv, ".easyrpg");
+#endif
+
 }
 
 void FileFinder::Quit() {

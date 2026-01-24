@@ -20,7 +20,7 @@
 #include "color.h"
 #include "game_config.h"
 #include "graphics.h"
-#include "keys.h"
+#include "_keys.h"
 #include "output.h"
 #include "player.h"
 #include "bitmap.h"
@@ -66,12 +66,12 @@ namespace {
 		Input::Keys::KP_MULTIPLY, Input::Keys::KP_DIVIDE
 	};
 
-	constexpr int SCREEN_WIDTH = 960;
-	constexpr int SCREEN_HEIGHT = 544;
+	constexpr int _SCREEN_WIDTH = 960;
+	constexpr int _SCREEN_HEIGHT = 544;
 
 	constexpr int touch_buttons_width = 117;
-	constexpr int touch_buttons_height = SCREEN_HEIGHT/8;
-	constexpr int touch_buttons_right_x = SCREEN_WIDTH - touch_buttons_width;
+	constexpr int touch_buttons_height = _SCREEN_HEIGHT/8;
+	constexpr int touch_buttons_right_x = _SCREEN_WIDTH - touch_buttons_width;
 	std::vector<bool> touched_buttons(16, false);
 
 	Game_ConfigVideo* vcfg_ref;
@@ -249,7 +249,7 @@ bool Psp2Ui::ProcessEvents() {
 		for (int i = 0; i < touch.reportNum; ++i) {
 			int xpos = touch.report[i].x / 2;
 			int ypos = touch.report[i].y / 2;
-			if (ypos < SCREEN_HEIGHT) {
+			if (ypos < _SCREEN_HEIGHT) {
 				int btn = ypos / touch_buttons_height;
 				if (xpos < touch_buttons_width) {
 					keys[touch_left[btn]] = true;

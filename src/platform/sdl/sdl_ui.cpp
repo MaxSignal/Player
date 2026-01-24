@@ -23,7 +23,7 @@
 #include "sdl_ui.h"
 #include "color.h"
 #include "graphics.h"
-#include "keys.h"
+#include "_keys.h"
 #include "output.h"
 #include "player.h"
 #include "bitmap.h"
@@ -61,7 +61,7 @@ SdlUi::SdlUi(long width, long height, const Game_Config& cfg) : BaseUi(cfg)
 
 	// Set some SDL environment variables before starting. These are platform
 	// dependent, so every port needs to set them manually
-#ifndef __wii__
+#if !defined(__wii__) && !defined(_TINSPIRE)
 	// Set window position to the middle of the screen
 	putenv(const_cast<char *>("SDL_VIDEO_WINDOW_POS=center"));
 #endif

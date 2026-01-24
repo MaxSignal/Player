@@ -22,6 +22,10 @@
 #include <cstdint>
 #include "utils.h"
 
+#ifdef _TINSPIRE
+	#define M_PI	3.141592653589793238462643
+#endif
+
 /** Contains helper functions for flash effect */
 namespace Shake {
 static constexpr int kShakeContinuousTimeStart = 65535;

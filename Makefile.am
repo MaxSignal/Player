@@ -220,7 +220,7 @@ libeasyrpg_player_a_SOURCES = \
 	src/instrumentation.h \
 	src/json_helper.cpp \
 	src/json_helper.h \
-	src/keys.h \
+	src/_keys.h \
 	src/main_data.cpp \
 	src/main_data.h \
 	src/maniac_patch.cpp \
@@ -524,6 +524,14 @@ if MACOS
 libeasyrpg_player_a_SOURCES += $(SOURCEFILES_MACOS)
 else
 EXTRA_DIST += $(SOURCEFILES_MACOS)
+endif
+
+SOURCEFILES_NSPIRE = \
+	src/platform/nspire/clock.h
+if NSPIRE
+libeasyrpg_player_a_SOURCES += $(SOURCEFILES_NSPIRE)
+else
+EXTRA_DIST += $(SOURCEFILES_NSPIRE)
 endif
 
 # These are used by CMake

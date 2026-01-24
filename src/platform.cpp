@@ -85,7 +85,7 @@ Platform::FileType Platform::File::GetType(bool follow_symlinks) const {
 	return FileType::Unknown;
 #else
 	struct stat sb = {};
-#  if defined(PLAYER_NINTENDO)
+#  if defined(PLAYER_NINTENDO) || defined(_TINSPIRE)
 	// no symlink support (FAT)
 	(void)follow_symlinks;
 	auto fn = ::stat;

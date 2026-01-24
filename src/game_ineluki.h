@@ -26,7 +26,7 @@
 
 #include <lcf/rpg/sound.h>
 
-#include "keys.h"
+#include "_keys.h"
 #include "string_view.h"
 #include "async_handler.h"
 

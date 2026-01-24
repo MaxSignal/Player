@@ -20,7 +20,7 @@
 #include "filefinder.h"
 #include "filesystem_stream.h"
 #include "input_buttons.h"
-#include "keys.h"
+#include "_keys.h"
 #include "options.h"
 #include "output.h"
 #include "input.h"
@@ -184,6 +184,8 @@ FilesystemView Game_Config::GetGlobalConfigFilesystem() {
 		if (!path.empty()) {
 			path = FileFinder::MakePath(path, FileFinder::MakePath(ORGANIZATION_NAME, APPLICATION_NAME));
 		}
+#elif defined(_TINSPIRE)
+		path = "easyrpg-player";
 #else
 		char* home = getenv("XDG_CONFIG_HOME");
 		if (home) {

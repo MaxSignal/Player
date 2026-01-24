@@ -23,7 +23,7 @@
 #include "filefinder.h"
 #include "graphics.h"
 #include "input.h"
-#include "keys.h"
+#include "_keys.h"
 #include "main_data.h"
 #include "options.h"
 #include "output.h"

@@ -25,7 +25,7 @@
 #include "system.h"
 #include "input_buttons.h"
 #include "input_source.h"
-#include "keys.h"
+#include "_keys.h"
 #include "game_config.h"
 
 /**

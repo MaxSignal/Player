@@ -112,12 +112,14 @@ FileFinder_RTP::FileFinder_RTP(bool no_rtp, bool no_rtp_warnings, std::string rt
 
 	// Our RTP is for all engines
 	ReadRegistry("EasyRPG", "RTP", "path");
+#elif defined(_TINSPIRE)
+	AddPath("/easyrpg-player/rtp/" + version_str);
 #else
 	// Fallback for unknown platforms
 	AddPath("/data/rtp/" + version_str);
 #endif
 
-#if (defined(PLAYER_NINTENDO) || defined(__vita__) || defined(__ANDROID__))
+#if (defined(PLAYER_NINTENDO) || defined(__vita__) || defined(__ANDROID__)) || defined(_TINSPIRE)
 	// skip environment paths
 	return;
 #endif

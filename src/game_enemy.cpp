@@ -31,6 +31,10 @@
 #include "attribute.h"
 #include "rand.h"
 
+#ifdef _TINSPIRE
+	#define M_PI	3.141592653589793238462643
+#endif
+
 Game_Enemy::Game_Enemy(const lcf::rpg::TroopMember* member)
 	: troop_member(member)
 {

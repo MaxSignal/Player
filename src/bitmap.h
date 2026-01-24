@@ -26,6 +26,10 @@
 #include <cassert>
 #include <pixman.h>
 
+#ifdef _TINSPIRE
+	#define M_PI	3.141592653589793238462643
+#endif
+
 #include "system.h"
 #include "color.h"
 #include "rect.h"

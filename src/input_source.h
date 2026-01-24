@@ -25,7 +25,7 @@
 #include "game_config.h"
 #include "game_clock.h"
 #include "input_buttons.h"
-#include "keys.h"
+#include "_keys.h"
 #include "point.h"
 
 namespace Input {

@@ -39,7 +39,7 @@
 
 #include "color.h"
 #include "graphics.h"
-#include "keys.h"
+#include "_keys.h"
 #include "output.h"
 #include "player.h"
 #include "bitmap.h"

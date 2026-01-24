@@ -28,7 +28,7 @@
 #include "font.h"
 #include "point.h"
 #include "rect.h"
-#include "keys.h"
+#include "_keys.h"
 #include "game_config.h"
 #include "game_clock.h"
 #include "input.h"
