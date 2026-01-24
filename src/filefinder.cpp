@@ -282,7 +282,11 @@ bool FileFinder::IsSupportedArchiveExtension(std::string path) {
 	std::string_view pv = path;
 
 #ifdef HAVE_LHASA
+#ifdef _TINSPIRE
+	if (EndsWith(pv, ".lzh.tns")) {
+#else
 	if (EndsWith(pv, ".lzh")) {
+#endif
 		return true;
 	}
 #endif
