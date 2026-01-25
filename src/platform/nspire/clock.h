@@ -18,7 +18,7 @@
 #ifndef EP_PLATFORM_NSPIRE_CLOCK_H
 #define EP_PLATFORM_NSPIRE_CLOCK_H
 
-#include <SDL3/SDL_timer.h>
+#include <SDL_timer.h>
 #include <cstdint>
 #include <chrono>
 

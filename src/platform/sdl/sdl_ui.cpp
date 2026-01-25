@@ -40,6 +40,44 @@ AudioInterface& SdlUi::GetAudio() {
 }
 #endif
 
+#ifdef _TINSPIRE
+static inline Uint8 rgb565_to_index16(Uint16 p) {
+    unsigned r5 = (p >> 11) & 0x1F;
+    unsigned g6 = (p >>  5) & 0x3F;
+    unsigned b5 = (p      ) & 0x1F;
+
+    // 0..255 に拡張（軽量）
+    unsigned r = (r5 << 3) | (r5 >> 2);
+    unsigned g = (g6 << 2) | (g6 >> 4);
+    unsigned b = (b5 << 3) | (b5 >> 2);
+
+    unsigned y = (r * 77 + g * 150 + b * 29 + 128) >> 8; // 0..255
+    unsigned level = (y + 8) >> 4;                       // 0..15
+    return (Uint8)(level << 4);                           // 0,16,...,240
+}
+
+static void Blit16To8bppGray16(const Bitmap& src, SDL_Surface* dst) {
+    if (!dst || !dst->format || dst->format->BitsPerPixel != 8) return;
+
+    const int w = std::min<int>(src.width(),  dst->w);
+    const int h = std::min<int>(src.height(), dst->h);
+
+    const uint8_t* sp = (const uint8_t*)src.pixels();
+    const int spitch = src.pitch();
+
+    uint8_t* dp = (uint8_t*)dst->pixels;
+    const int dpitch = dst->pitch;
+
+    for (int y = 0; y < h; ++y) {
+        const Uint16* srow = (const Uint16*)(sp + y * spitch);
+        uint8_t* drow = dp + y * dpitch;
+        for (int x = 0; x < w; ++x) {
+            drow[x] = rgb565_to_index16(srow[x]);
+        }
+    }
+}
+#endif
+
 static int FilterUntilFocus(const SDL_Event* evnt);
 
 #if defined(USE_KEYBOARD) && defined(SUPPORT_KEYBOARD)
@@ -79,6 +117,24 @@ SdlUi::SdlUi(long width, long height, const Game_Config& cfg) : BaseUi(cfg)
 	EndDisplayModeChange();
 
 	// Create the surface we draw on
+#ifdef _TINSPIRE
+    DynamicFormat format = DynamicFormat(
+        16,
+        0xF800, 0x07E0, 0x001F,
+        0,
+        PF::NoAlpha);
+
+    Bitmap::SetFormat(Bitmap::ChooseFormat(format));
+    main_surface = Bitmap::Create(
+        SCREEN_TARGET_WIDTH,
+        SCREEN_TARGET_HEIGHT,
+        false,
+        16
+    );
+
+    // main_surface_sdl は（今のコードだと）使ってないなら作らなくてOK
+    main_surface_sdl = nullptr;
+#else
 #if defined(WORDS_BIGENDIAN)
 	DynamicFormat format = DynamicFormat(
 		32,
@@ -114,6 +170,11 @@ SdlUi::SdlUi(long width, long height, const Game_Config& cfg) : BaseUi(cfg)
 		format.g.mask,
 		format.b.mask,
 		format.a.mask);
+#endif
+
+if (!main_surface) {
+    Output::Error("Couldn't create {}x{} image.", SCREEN_TARGET_WIDTH, SCREEN_TARGET_HEIGHT);
+}
 
 	SetTitle(GAME_TITLE);
 
@@ -363,9 +424,28 @@ bool SdlUi::RefreshDisplayMode() {
 	if (!sdl_surface)
 		return false;
 
+Output::Debug("SDL_SetVideoMode returned bpp={} w={} h={} pitch={}", sdl_surface->format->BitsPerPixel, sdl_surface->w, sdl_surface->h, sdl_surface->pitch);
+Output::Debug("SDL masks: R={:08x} G={:08x} B={:08x} A={:08x}", (unsigned)sdl_surface->format->Rmask, (unsigned)sdl_surface->format->Gmask, (unsigned)sdl_surface->format->Bmask, (unsigned)sdl_surface->format->Amask);
+
+#ifdef _TINSPIRE
+	if (sdl_surface->format->BitsPerPixel == 8) {
+		// パレット設定
+		SDL_Color cols[256];
+		for (int i = 0; i < 256; ++i) {
+			cols[i].r = cols[i].g = cols[i].b = (Uint8)i;
+			cols[i].unused = 0;
+		}
+		SDL_SetColors(sdl_surface, cols, 0, 256);
+
+		current_display_mode.bpp = 8;
+		sdl_surface_bmp.reset(); // 8bppをBitmap化しない
+		return true;
+	}
+#else
 	// Modes below 15 bpp aren't supported
 	if (sdl_surface->format->BitsPerPixel < 15)
 		return false;
+#endif
 
 	sdl_surface_bmp = Bitmap::Create(
 		sdl_surface->pixels,
@@ -423,6 +503,16 @@ bool SdlUi::ProcessEvents() {
 }
 
 void SdlUi::UpdateDisplay() {
+#ifdef _TINSPIRE
+	if (sdl_surface && sdl_surface->format->BitsPerPixel == 8) {
+		if (SDL_MUSTLOCK(sdl_surface)) SDL_LockSurface(sdl_surface);
+		Blit16To8bppGray16(*main_surface, sdl_surface);
+		if (SDL_MUSTLOCK(sdl_surface)) SDL_UnlockSurface(sdl_surface);
+		SDL_UpdateRect(sdl_surface, 0, 0, 0, 0);
+		return;
+	}
+#endif
+
 	if (SDL_MUSTLOCK(sdl_surface)) SDL_LockSurface(sdl_surface);
 
 	if (zoom_available && current_display_mode.zoom == 2) {
