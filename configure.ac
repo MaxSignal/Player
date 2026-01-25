@@ -83,8 +83,12 @@ PKG_CHECK_MODULES([FMT],[fmt],,[
 		AC_MSG_ERROR([Could not find libfmt! Consider installing version 5.3 or newer.])
 	],[AC_MSG_RESULT([yes])])
 ])
-PKG_CHECK_MODULES([SDL],[sdl],[sdl_version=1],[
-	AC_MSG_ERROR([Could not find SDL! Consider installing version 2.0.14 or newer.])
+PKG_CHECK_MODULES([SDL],[sdl3],[sdl_version=3],[
+	PKG_CHECK_MODULES([SDL],[sdl2 >= 2.0.14],[sdl_version=2],[
+		PKG_CHECK_MODULES([SDL],[sdl],[sdl_version=1],[
+			AC_MSG_ERROR([Could not find SDL! Consider installing version 2.0.14 or newer.])
+		])
+	])
 ])
 AC_DEFINE_UNQUOTED([USE_SDL],[$sdl_version],[Enable SDL, version 3, 2 or 1.2])
 AM_CONDITIONAL([HAVE_SDL3], [test "x$sdl_version" = "x3"])
