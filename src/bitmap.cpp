@@ -23,6 +23,12 @@
 #include <iostream>
 #include <unordered_map>
 
+#ifdef _TINSPIRE
+#include <png.h>
+#include <csetjmp>
+#include <vector>
+#endif
+
 #include "utils.h"
 #include "cache.h"
 #include "bitmap.h"
@@ -112,7 +118,170 @@ Bitmap::Bitmap(Filesystem_Stream::InputStream stream, bool transparent, uint32_t
 	} else if (bytes > 2 && strncmp((char*)data, "BM", 2) == 0) {
 		img_okay = ImageBMP::Read(stream, transparent, image_out);
 	} else if (bytes >= 4 && strncmp((char*)(data + 1), "PNG", 3) == 0) {
-		img_okay = ImagePNG::Read(stream, transparent, image_out);
+#ifdef _TINSPIRE
+    auto png_read_stream = [](png_structp png_ptr, png_bytep out, png_size_t len) {
+        auto* s = reinterpret_cast<Filesystem_Stream::InputStream*>(png_get_io_ptr(png_ptr));
+        s->read(reinterpret_cast<char*>(out), len);
+        if ((png_size_t)s->gcount() != len) {
+            png_error(png_ptr, "short read");
+        }
+    };
+
+    auto png_warn_fn = [](png_structp, png_const_charp msg) {
+        Output::Debug("libpng warning: {}", msg);
+    };
+
+    auto png_err_fn = [](png_structp png_ptr, png_const_charp msg) {
+        Output::Warning("libpng error: {}", msg);
+        png_longjmp(png_ptr, 1);
+    };
+
+    auto read_png_direct =[this, &png_read_stream, &png_warn_fn, &png_err_fn](Filesystem_Stream::InputStream& s, bool transparent_flag) -> bool {
+        png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, png_err_fn, png_warn_fn);
+        if (!png_ptr) return false;
+
+        png_infop info_ptr = png_create_info_struct(png_ptr);
+        if (!info_ptr) {
+            png_destroy_read_struct(&png_ptr, nullptr, nullptr);
+            return false;
+        }
+
+        if (setjmp(png_jmpbuf(png_ptr))) {
+            png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+            return false;
+        }
+
+        png_set_read_fn(png_ptr, &s, png_read_stream);
+        png_read_info(png_ptr, info_ptr);
+
+        png_uint_32 w, h;
+        int bit_depth, color_type, interlace, comp, filter;
+        png_get_IHDR(png_ptr, info_ptr, &w, &h, &bit_depth, &color_type, &interlace, &comp, &filter);
+
+        // 色キー互換（元のimage_png.cppの挙動に寄せる）
+        const int orig_color_type = color_type;
+        const bool had_trns = png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) != 0;
+        png_color pal0{0,0,0};
+        bool have_pal0 = false;
+        if (orig_color_type == PNG_COLOR_TYPE_PALETTE) {
+            png_colorp pal = nullptr;
+            int n = 0;
+            if (png_get_PLTE(png_ptr, info_ptr, &pal, &n) && n > 0) {
+                pal0 = pal[0];
+                have_pal0 = true;
+            }
+        }
+
+        // 出力をRGBA8に統一（row単位）
+        if (bit_depth == 16) png_set_strip_16(png_ptr);
+        if (color_type == PNG_COLOR_TYPE_PALETTE) png_set_palette_to_rgb(png_ptr);
+        if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) png_set_expand_gray_1_2_4_to_8(png_ptr);
+        if (had_trns) png_set_tRNS_to_alpha(png_ptr);
+        if (!(color_type & PNG_COLOR_MASK_ALPHA)) png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+        if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA) png_set_gray_to_rgb(png_ptr);
+
+        png_read_update_info(png_ptr, info_ptr);
+
+        // ここが落ちやすい確保ポイント（先に確保してからrow書き込み）
+        this->Init((int)w, (int)h, nullptr);
+        if (!this->bitmap) {
+            png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+            return false;
+        }
+
+        std::vector<png_byte> row(png_get_rowbytes(png_ptr, info_ptr));
+		uint8_t* dst_base = reinterpret_cast<uint8_t*>(this->pixels());
+		const int dst_pitch = this->pitch();
+		const auto& fmt = this->format;
+
+        auto quant = [](uint8_t v, int bits) -> uint16_t {
+            if (bits <= 0) return 0;
+            const uint16_t m = (1u << bits) - 1u;
+            return (uint16_t)((v * m + 127) / 255);
+        };
+
+		auto lum8 = [](uint8_t r, uint8_t g, uint8_t b) -> uint8_t {
+			// 0..255（重み付き）
+			return (uint8_t)((77u*r + 150u*g + 29u*b + 128u) >> 8);
+		};
+
+		for (png_uint_32 y = 0; y < h; ++y) {
+			png_read_row(png_ptr, row.data(), nullptr);
+
+			uint8_t* drow = dst_base + y * dst_pitch;
+			const uint8_t* sp = row.data();
+
+			for (png_uint_32 x = 0; x < w; ++x) {
+				uint8_t r = sp[0], g = sp[1], b = sp[2], a = sp[3];
+				// （必要ならここで色キー処理→a=0 など）
+				MultiplyAlpha(r, g, b, a);
+
+				uint8_t* dp = drow + x * fmt.bytes;
+
+				if (fmt.bits == 8) {
+					// 16階調グレー(0..15)をインデックスにする例（0は透明に予約）
+					uint8_t idx = 0;
+					if (a >= 128) {
+						uint8_t l = lum8(r, g, b);
+						uint8_t g16 = (uint8_t)((l * 15u + 127u) / 255u); // 0..15
+						idx = (uint8_t)(g16 + 1); // 1..16（0は透明）
+					}
+					dp[0] = idx;
+				} else if (fmt.bits == 16) {
+					auto quant = [](uint8_t v, int bits) -> uint16_t {
+						const uint16_t m = (bits <= 0) ? 0 : (uint16_t)((1u << bits) - 1u);
+						return (bits <= 0) ? 0 : (uint16_t)((v * m + 127) / 255);
+					};
+
+					uint16_t pr = (uint16_t)(quant(r, fmt.r.bits) << fmt.r.shift);
+					uint16_t pg = (uint16_t)(quant(g, fmt.g.bits) << fmt.g.shift);
+					uint16_t pb = (uint16_t)(quant(b, fmt.b.bits) << fmt.b.shift);
+
+					uint16_t pa = 0;
+					if (fmt.a.bits > 0) {
+						const uint16_t am = (1u << fmt.a.bits) - 1u;
+						const uint16_t av = (a >= 128) ? am : 0; // a1 前提
+						pa = (uint16_t)(av << fmt.a.shift);
+					}
+
+					*reinterpret_cast<uint16_t*>(dp) = (uint16_t)(pr | pg | pb | pa);
+				} else { // 32bpp想定（必要なら）
+					// とりあえず RGBA8888 を詰めたいなら fmt の shift を使って pack する
+					auto quant = [](uint8_t v, int bits) -> uint32_t {
+						const uint32_t m = (bits <= 0) ? 0 : ((1u << bits) - 1u);
+						return (bits <= 0) ? 0 : (uint32_t)((v * m + 127) / 255);
+					};
+
+					uint32_t pr = quant(r, fmt.r.bits) << fmt.r.shift;
+					uint32_t pg = quant(g, fmt.g.bits) << fmt.g.shift;
+					uint32_t pb = quant(b, fmt.b.bits) << fmt.b.shift;
+					uint32_t pa = (fmt.a.bits ? ((a >= 128 ? ((1u<<fmt.a.bits)-1u) : 0u) << fmt.a.shift) : 0u);
+
+					*reinterpret_cast<uint32_t*>(dp) = (uint32_t)(pr | pg | pb | pa);
+				}
+
+				sp += 4;
+			}
+		}
+
+        png_read_end(png_ptr, nullptr);
+        png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+
+        this->original_bpp = 32;
+        return true;
+    };
+
+    // stream はすでに先頭にseek済み（このコンストラクタの前処理）
+    if (!read_png_direct(stream, transparent)) {
+        return; // bitmapがnullのままならCreate側で弾かれる
+    }
+
+    CheckPixels(flags);
+    id = ToString(stream.GetName());
+    return; // 以降の image_out / ConvertImage 経路に入らない
+#else
+    img_okay = ImagePNG::Read(stream, transparent, image_out);
+#endif
 	} else
 		Output::Warning("Unsupported image file {} (Magic: {:02X})", stream.GetName(), *reinterpret_cast<uint32_t*>(data));
 

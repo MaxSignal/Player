@@ -40,7 +40,11 @@
 #endif
 
 #include <lcf/reader_util.h>
+#ifdef _TINSPIRE
+#include "bitmapfont_external.h"
+#else
 #include "bitmapfont.h"
+#endif
 
 #include "filefinder.h"
 #include "output.h"
@@ -66,7 +70,7 @@ namespace {
 	// This is the last-resort function for finding a glyph, all the other fonts should fallback on it.
 	// It tries to display a WenQuanYi glyph, and if it's not found, returns a replacement glyph.
 	BitmapFontGlyph const* find_fallback_glyph(char32_t code) {
-		auto* wqy = find_glyph(BITMAPFONT_WQY, code);
+		auto* wqy = find_glyph(BitmapFontExternal::Wqy(), code);
 		if (wqy != NULL) {
 			return wqy;
 		}
@@ -79,38 +83,38 @@ namespace {
 
 	BitmapFontGlyph const* find_gothic_glyph(char32_t code) {
 		if (Player::IsCP936()) {
-			auto* wqy = find_glyph(BITMAPFONT_WQY, code);
+			auto* wqy = find_glyph(BitmapFontExternal::Wqy(), code);
 			if (wqy != NULL) {
 				return wqy;
 			}
 		}
-		auto* gothic = find_glyph(SHINONOME_GOTHIC, code);
+		auto* gothic = find_glyph(BitmapFontExternal::ShinonomeGothic(), code);
 		return gothic != NULL ? gothic : find_fallback_glyph(code);
 	}
 
 	BitmapFontGlyph const* find_mincho_glyph(char32_t code) {
 		if (Player::IsCP936()) {
-			auto* wqy = find_glyph(BITMAPFONT_WQY, code);
+			auto* wqy = find_glyph(BitmapFontExternal::Wqy(), code);
 			if (wqy != NULL) {
 				return wqy;
 			}
 		}
-		auto* mincho = find_glyph(SHINONOME_MINCHO, code);
+		auto* mincho = find_glyph(BitmapFontExternal::ShinonomeMincho(), code);
 		return mincho == NULL ? find_gothic_glyph(code) : mincho;
 	}
 
 	BitmapFontGlyph const* find_rmg2000_glyph(char32_t code) {
-		auto* rmg2000 = find_glyph(BITMAPFONT_RMG2000, code);
+		auto* rmg2000 = find_glyph(BitmapFontExternal::Rmg2000(), code);
 		if (rmg2000 != NULL) {
 			return rmg2000;
 		}
 
-		auto* ttyp0 = find_glyph(BITMAPFONT_TTYP0, code);
+		auto* ttyp0 = find_glyph(BitmapFontExternal::Ttyp0(), code);
 		return ttyp0 != NULL ? ttyp0 : find_mincho_glyph(code);
 	}
 
 	BitmapFontGlyph const* find_ttyp0_glyph(char32_t code) {
-		auto* ttyp0 = find_glyph(BITMAPFONT_TTYP0, code);
+		auto* ttyp0 = find_glyph(BitmapFontExternal::Ttyp0(), code);
 		return ttyp0 != NULL ? ttyp0 : find_gothic_glyph(code);
 	}
 

@@ -44,7 +44,8 @@ libeasyrpg_player_a_SOURCES = \
 	src/battle_animation.h \
 	src/bitmap.cpp \
 	src/bitmap.h \
-	src/bitmapfont.h \
+	src/bitmapfont_external.cpp \
+	src/bitmapfont_external.h \
 	src/bitmapfont_glyph.h \
 	src/bitmap_hslrgb.h \
 	src/cache.cpp \
@@ -192,13 +193,8 @@ libeasyrpg_player_a_SOURCES = \
 	src/game_vehicle.h \
 	src/game_windows.cpp \
 	src/game_windows.h \
-	src/generated/bitmapfont_rmg2000.h \
-	src/generated/bitmapfont_ttyp0.h \
-	src/generated/bitmapfont_wqy.h \
 	src/generated/logo.h \
 	src/generated/logo2.h \
-	src/generated/shinonome_gothic.h \
-	src/generated/shinonome_mincho.h \
 	src/graphics.cpp \
 	src/graphics.h \
 	src/hslrgb.cpp \
@@ -527,10 +523,18 @@ EXTRA_DIST += $(SOURCEFILES_MACOS)
 endif
 
 SOURCEFILES_NSPIRE = \
-	src/platform/nspire/clock.h
+	src/platform/nspire/clock.h 
 if NSPIRE
 libeasyrpg_player_a_SOURCES += $(SOURCEFILES_NSPIRE)
 else
+SOURCEFILES_STATIC = \
+	src/bitmapfont.h \
+	src/generated/bitmapfont_rmg2000.h \
+	src/generated/bitmapfont_ttyp0.h \
+	src/generated/bitmapfont_wqy.h \
+	src/generated/shinonome_gothic.h \
+	src/generated/shinonome_mincho.h 
+libeasyrpg_player_a_SOURCES += $(SOURCEFILES_STATIC)
 EXTRA_DIST += $(SOURCEFILES_NSPIRE)
 endif
 
