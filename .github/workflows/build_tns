@@ -1,0 +1,73 @@
+name: build-tns
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    env:
+      TOOLCHAIN_REPO: MaxSignal/build-toolchain
+      TOOLCHAIN_TAG: latest
+      TOOLCHAIN_ASSET: ndless-sdk.tar.gz
+      NDLESS_ROOT: ${{ github.workspace }}/ndless
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential git curl ca-certificates \
+            autoconf automake libtool pkg-config \
+            cmake ninja-build meson \
+            python3 python3-dev
+
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "${NDLESS_ROOT}"
+          cd "${NDLESS_ROOT}"
+          gh release download "${TOOLCHAIN_TAG}" -R "${TOOLCHAIN_REPO}" -p "${TOOLCHAIN_ASSET}" -D .
+          tar -xzf "${TOOLCHAIN_ASSET}"
+          test -d "${NDLESS_ROOT}/ndless-sdk/toolchain/install"
+
+      - run: |
+          NDLESS_SDK="${NDLESS_ROOT}/ndless-sdk"
+          echo "${NDLESS_SDK}/toolchain/install/bin" >> "$GITHUB_PATH"
+          echo "${NDLESS_SDK}/bin" >> "$GITHUB_PATH"
+          echo "NDLESS_SDK=${NDLESS_SDK}" >> "$GITHUB_ENV"
+          echo "PKG_CONFIG_LIBDIR=${NDLESS_SDK}/lib/pkgconfig" >> "$GITHUB_ENV"
+          echo "PKG_CONFIG_PATH=${NDLESS_SDK}/lib/pkgconfig" >> "$GITHUB_ENV"
+
+      - shell: bash
+        run: |
+          set -euo pipefail
+
+          autoreconf -i
+
+          CFLAGS="-DNDEBUG" CXXFLAGS="-DNDEBUG" CPPFLAGS="-DNDEBUG" \
+          ./configure \
+            --host=arm-none-eabi \
+            CC=nspire-gcc CXX=nspire-g++ \
+            PNG_CFLAGS="-I${NDLESS_SDK}/include/libpng16" \
+            PNG_LIBS="-L${NDLESS_SDK}/lib -lpng -lexpat" \
+            ZLIB_CFLAGS="-I${NDLESS_SDK}/include" \
+            ZLIB_LIBS="-L${NDLESS_SDK}/lib -lz" \
+            FREETYPE_CFLAGS="-I${NDLESS_SDK}/include/freetype2" \
+            FREETYPE_LIBS="-L${NDLESS_SDK}/lib -lfreetype -linih -licuuc -licui18n -licudata" \
+            HARFBUZZ_CFLAGS="-I${NDLESS_SDK}/include/harfbuzz/" \
+            HARFBUZZ_LIBS="-L${NDLESS_SDK}/lib -lharfbuzz" \
+            --without-audio
+
+          make -j"$(nproc)"
+
+          mkdir -p dist
+          genzehn --input ./easyrpg-player --output dist/easyrpg-player.zh --240x320-support true --compress
+          make-prg dist/easyrpg-player.zh dist/easyrpg-player.tns
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: easyrpg-player-tns
+          path: dist/easyrpg-player.tns
+          if-no-files-found: error
