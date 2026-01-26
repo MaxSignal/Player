@@ -1,6 +1,7 @@
 name: build-tns
 
 on:
+  push:
   workflow_dispatch:
 
 jobs:
@@ -39,6 +40,23 @@ jobs:
           echo "NDLESS_SDK=${NDLESS_SDK}" >> "$GITHUB_ENV"
           echo "PKG_CONFIG_LIBDIR=${NDLESS_SDK}/lib/pkgconfig" >> "$GITHUB_ENV"
           echo "PKG_CONFIG_PATH=${NDLESS_SDK}/lib/pkgconfig" >> "$GITHUB_ENV"
+
+      - shell: bash
+        run: |
+          set -euo pipefail
+          PC_DIR="${NDLESS_SDK}/lib/pkgconfig"
+          if [[ -d "${PC_DIR}" ]]; then
+            FIRST_PC="$(find "${PC_DIR}" -maxdepth 1 -name '*.pc' | head -n 1 || true)"
+            if [[ -n "${FIRST_PC}" ]]; then
+              OLD_PREFIX="$(awk -F= '/^prefix=/{print $2; exit}' "${FIRST_PC}")"
+              if [[ -n "${OLD_PREFIX}" && "${OLD_PREFIX}" != "${NDLESS_SDK}" ]]; then
+                while IFS= read -r -d '' f; do
+                  perl -pi -e "s|\Q${OLD_PREFIX}\E|${NDLESS_SDK}|g" "$f"
+                  perl -pi -e "s|^prefix=.*$|prefix=${NDLESS_SDK}|m" "$f"
+                done < <(find "${PC_DIR}" -maxdepth 1 -name '*.pc' -print0)
+              fi
+            fi
+          fi
 
       - shell: bash
         run: |
